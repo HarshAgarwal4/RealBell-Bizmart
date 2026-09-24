@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from '../services/axios';
 import { useStore } from "../zustand/store";
@@ -18,12 +18,16 @@ import {
   Building2, 
   CheckCircle2, 
   LockKeyhole,
-  Check
+  Check,
+  Store
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const SignupForm = () => {
   const user = useStore((state) => state.user);
+  const [searchParams] = useSearchParams();
+  const initialRole = searchParams.get('role') === 'seller' ? 'seller' : 'user';
+  const [selectedRole, setSelectedRole] = useState(initialRole);
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -54,14 +58,18 @@ const SignupForm = () => {
       return;
     }
     try {
-      let res = await axios.post('/signup', data);
+      let res = await axios.post('/signup', { ...data, role: selectedRole });
       if (res.status === 200) {
         if (res.data.status === 0) toast.error("Error in creating account. Please try again.");
         if (res.data.status === 6) toast.error("This email is already registered.");
         if (res.data.status === 7) toast.error("Invalid fields provided.");
         if (res.data.status === 10) toast.error("Invalid or expired OTP. Please verify again.");
         if (res.data.status === 1) {
-          toast.success("Account created successfully! Welcome to RealBell BizMart.");
+          if (selectedRole === 'seller') {
+            toast.success("Shopkeeper account created! Please sign in to submit shop details.");
+          } else {
+            toast.success("Account created successfully! Welcome to RealBell BizMart.");
+          }
           reset();
           navigate('/login');
         }
@@ -211,8 +219,39 @@ const SignupForm = () => {
               Create Account ✨
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Register as a buyer or enterprise supplier to get started
+              {selectedRole === 'seller' 
+                ? 'Register your wholesale shop / manufacturing unit on RealBell'
+                : 'Register as a buyer or enterprise procurement manager'}
             </p>
+          </div>
+
+          {/* Account Type Selector (Buyer vs Shopkeeper/Seller) */}
+          <div className="mb-4 grid grid-cols-2 gap-2 p-1.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl">
+            <button
+              type="button"
+              onClick={() => setSelectedRole('user')}
+              className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                selectedRole === 'user'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Buyer Account</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedRole('seller')}
+              className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                selectedRole === 'seller'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Store className="w-3.5 h-3.5" />
+              <span>Shopkeeper / Seller</span>
+            </button>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -363,7 +402,7 @@ const SignupForm = () => {
                 <span>Creating Account...</span>
               ) : (
                 <>
-                  <span>Create RealBell Account</span>
+                  <span>{selectedRole === 'seller' ? 'Register as Shopkeeper / Seller' : 'Create Buyer Account'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

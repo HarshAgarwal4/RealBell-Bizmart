@@ -15,7 +15,8 @@ import {
   Building2, 
   ArrowRight,
   CheckCircle2,
-  LockKeyhole
+  LockKeyhole,
+  Store
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -278,6 +279,26 @@ const LoginPage = () => {
               )}
             </motion.button>
           </form>
+
+          {/* Become a Seller / Register as Shopkeeper option */}
+          <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-500/30 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                <Store className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <h4 className="text-xs font-bold text-white">Sell on RealBell BizMart</h4>
+                <p className="text-[11px] text-slate-400">Register as a Shopkeeper or Wholesaler</p>
+              </div>
+            </div>
+            <Link
+              to="/signup?role=seller"
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs px-3.5 py-2.5 rounded-xl transition shrink-0 whitespace-nowrap shadow-md cursor-pointer flex items-center gap-1"
+            >
+              <span>Become a Seller</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
           {/* Footer Divider */}
           <div className="mt-8 pt-6 border-t border-slate-800 text-center">
