@@ -3,6 +3,85 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --bg-page: #F7F5F0;
+  --bg-card: #F0ECE3;
+  --bg-sidebar: #F1EEE7;
+  --border-theme: #E7E2D8;
+  --text-main: #172033;
+  --text-muted: #667085;
+  --primary-orange: #F59E0B;
+  --accent-orange: #D97706;
+  /* Input bg same as page in light */
+  --bg-input: #F7F5F0;
+}
+
+/* ========== DARK THEME: Rich Warm Chocolate Charcoal ========== */
+/* Palette from mockup:
+   Page BG       : #160D06  (deepest warm espresso)
+   Card BG       : #1E1208  (warm dark brown – slightly lighter than page)
+   Sidebar       : #1A1008  (same as navbar top – very deep warm brown)
+   Input BG      : #130B05  (even darker for form fields / nested areas)
+   Border        : #2E1F10  (subtle warm dark border)
+   Text main     : #EAD9C4  (warm cream – NOT pure white)
+   Text muted    : #9C7A5A  (warm caramel muted)
+   Primary       : #F59E0B
+   Accent        : #D97706
+*/
+.dark {
+  --bg-page: #160D06;
+  --bg-card: #1E1208;
+  --bg-sidebar: #1A1008;
+  --border-theme: #2E1F10;
+  --text-main: #EAD9C4;
+  --text-muted: #9C7A5A;
+  --primary-orange: #F59E0B;
+  --accent-orange: #D97706;
+  --bg-input: #130B05;
+}
+
+/* Theme helper classes matching the design mockup */
+.bg-theme-page {
+  background-color: var(--bg-page);
+}
+.bg-theme-card {
+  background-color: var(--bg-card);
+}
+.bg-theme-sidebar {
+  background-color: var(--bg-sidebar);
+}
+.border-theme-border {
+  border-color: var(--border-theme);
+}
+.text-theme-main {
+  color: var(--text-main);
+}
+.text-theme-muted {
+  color: var(--text-muted);
+}
+.text-theme-primary {
+  color: var(--primary-orange);
+}
+.text-theme-accent {
+  color: var(--accent-orange);
+}
+.bg-theme-primary {
+  background-color: var(--primary-orange);
+}
+.bg-theme-accent {
+  background-color: var(--accent-orange);
+}
+.bg-theme-input {
+  background-color: var(--bg-input);
+}
+/* Overlay hover helpers */
+.hover-bg-warm:hover {
+  background-color: rgba(245, 158, 11, 0.08);
+}
+.dark .hover-bg-warm:hover {
+  background-color: rgba(234, 217, 196, 0.06);
+}
+
 @layer base {
   * {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -16,6 +95,9 @@
   body {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     overflow-x: hidden;
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
@@ -42,4 +124,47 @@
 
 .animate-soft-pulse {
   animation: softPulse 2.5s infinite ease-in-out;
+}
+
+/* =============================================
+   SIDEBAR SCROLLBAR — Warm theme, thin & elegant
+   ============================================= */
+
+/* Target the sidebar <aside> element */
+aside.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-theme) transparent;
+}
+
+/* Light mode WebKit */
+aside.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+aside.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+}
+aside.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border-theme);
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
+}
+aside.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-orange);
+}
+
+/* Dark mode — scrollbar thumb is warmer */
+.dark aside.sidebar-scroll {
+  scrollbar-color: #3A2A18 transparent;
+}
+.dark aside.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: #3A2A18;
+}
+.dark aside.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-orange);
+}
+
+/* Hide scrollbar track completely when not scrolling (adds elegance) */
+aside.sidebar-scroll::-webkit-scrollbar-track-piece {
+  background: transparent;
 }

@@ -110,14 +110,14 @@ export const CartModal = () => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-            className="w-screen max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shadow-2xl text-slate-900 dark:text-white"
+            className="w-screen max-w-md bg-theme-card border-l border-theme-border flex flex-col shadow-2xl text-theme-main"
           >
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-850">
+            <div className="p-4 sm:p-5 border-b border-theme-border flex items-center justify-between bg-theme-page">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-amber-500" />
+                <ShoppingBag className="w-5 h-5 text-[#F59E0B]" />
                 <h3 className="font-bold text-sm sm:text-base">
-                  {step === 'cart' ? `Wholesale Cart (${cart.length} items)` : 'Delivery & Payment'}
+                  {step === 'cart' ? `Shopping Cart (${cart.length} items)` : 'Delivery & Payment'}
                 </h3>
               </div>
               <button 
@@ -135,9 +135,9 @@ export const CartModal = () => {
                   <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
                     <ShoppingBag className="w-8 h-8" />
                   </div>
-                  <h4 className="font-bold text-sm sm:text-base">Your wholesale cart is empty</h4>
+                  <h4 className="font-bold text-sm sm:text-base">Your shopping cart is empty</h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
-                    Browse our wholesale catalog and select quality verified products for your business.
+                    Explore top trending products on RealBell BizMart marketplace and order with secure Razorpay payment.
                   </p>
                   <button
                     onClick={() => { setIsCartOpen(false); navigate('/'); }}
@@ -183,7 +183,7 @@ export const CartModal = () => {
                           <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-800">
                             <button 
                               onClick={() => updateCartQty(item._id, item.quantity - 1)}
-                              disabled={item.quantity <= (item.moq || 1)}
+                              disabled={item.quantity <= 1}
                               className="px-2 py-1 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 transition"
                             >
                               <Minus className="w-3 h-3" />
@@ -212,7 +212,7 @@ export const CartModal = () => {
                 <form id="shipping-form" onSubmit={handleCheckoutWithRazorpay} className="space-y-3.5">
                   <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
                     <Truck className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                    <span>Free Pan-India Bulk Commercial Delivery included!</span>
+                    <span>Free Express Doorstep Delivery included on this order!</span>
                   </div>
 
                   <div>
@@ -307,7 +307,7 @@ export const CartModal = () => {
               <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 space-y-3">
                 <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                   <div className="flex justify-between">
-                    <span>Wholesale Subtotal:</span>
+                    <span>Cart Subtotal:</span>
                     <span className="font-semibold text-slate-900 dark:text-white">₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400">

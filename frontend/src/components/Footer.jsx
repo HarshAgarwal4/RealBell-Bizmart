@@ -15,16 +15,16 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const Footer = ({ onOpenRFQ }) => {
+const Footer = () => {
   return (
-    <footer className="bg-slate-950 text-slate-300 border-t border-slate-800 font-poppins">
+    <footer className="bg-[#172033] dark:bg-[#110B07] text-slate-300 dark:text-[#9CA3AF] border-t border-slate-800 dark:border-[#3A2A1F] font-poppins relative z-40 transition-colors">
       {/* Value Badges Banner */}
-      <div className="border-b border-slate-800 bg-slate-900/50">
+      <div className="border-b border-slate-800 dark:border-[#3A2A1F] bg-black/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <motion.div 
               whileHover={{ y: -2 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800"
+              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 dark:bg-[#1C140F] border border-slate-800 dark:border-[#3A2A1F]"
             >
               <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
                 <Award className="w-5 h-5" />
@@ -37,40 +37,40 @@ const Footer = ({ onOpenRFQ }) => {
 
             <motion.div 
               whileHover={{ y: -2 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800"
+              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 dark:bg-[#1C140F] border border-slate-800 dark:border-[#3A2A1F]"
             >
               <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-white font-bold text-xs sm:text-sm">100% Verified Sellers</h4>
-                <p className="text-[11px] text-slate-400">Business registration & audit verified</p>
+                <h4 className="text-white dark:text-[#F1F5F9] font-bold text-xs sm:text-sm">100% Verified Sellers</h4>
+                <p className="text-[11px] text-slate-400 dark:text-[#9CA3AF]">Business registration & audit verified</p>
               </div>
             </motion.div>
 
             <motion.div 
               whileHover={{ y: -2 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800"
+              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 dark:bg-[#1C140F] border border-slate-800 dark:border-[#3A2A1F]"
             >
               <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
                 <Lock className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-white font-bold text-xs sm:text-sm">Escrow Protection</h4>
-                <p className="text-[11px] text-slate-400">Funds released after QC approval</p>
+                <h4 className="text-white dark:text-[#F1F5F9] font-bold text-xs sm:text-sm">Escrow Protection</h4>
+                <p className="text-[11px] text-slate-400 dark:text-[#9CA3AF]">Funds released after QC approval</p>
               </div>
             </motion.div>
 
             <motion.div 
               whileHover={{ y: -2 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800"
+              className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 dark:bg-[#1C140F] border border-slate-800 dark:border-[#3A2A1F]"
             >
               <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
                 <Truck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-white font-bold text-xs sm:text-sm">Doorstep Delivery</h4>
-                <p className="text-[11px] text-slate-400">Pan-India & global freight</p>
+                <h4 className="text-white dark:text-[#F1F5F9] font-bold text-xs sm:text-sm">Doorstep Delivery</h4>
+                <p className="text-[11px] text-slate-400 dark:text-[#9CA3AF]">Pan-India & global freight</p>
               </div>
             </motion.div>
           </div>
@@ -151,40 +151,31 @@ const Footer = ({ onOpenRFQ }) => {
               Buyer Hub
             </h4>
             <ul className="space-y-2 text-xs text-slate-400">
-              <li>
-                <button 
-                  onClick={() => onOpenRFQ && onOpenRFQ({ title: 'Bulk Buyer RFQ' })}
-                  className="hover:text-amber-400 transition text-left cursor-pointer"
-                >
-                  Post Buying Requirement
-                </button>
-              </li>
-              <li><a href="#why-choose" className="hover:text-amber-400 transition">RealBell Trade Assurance</a></li>
-              <li><a href="#how-it-works" className="hover:text-amber-400 transition">Quality Inspection & QC</a></li>
-              <li><a href="#why-choose" className="hover:text-amber-400 transition">Custom OEM Prototyping</a></li>
-              <li><a href="#why-choose" className="hover:text-amber-400 transition">Export Logistics & Customs</a></li>
-              <li><Link to="/login" className="hover:text-amber-400 transition">Buyer Portal Login</Link></li>
+              <li><Link to="/user/orders" className="hover:text-amber-400 transition">Track Active Orders</Link></li>
+              <li><a href="#product-catalog" className="hover:text-amber-400 transition">Explore Trending Products</a></li>
+              <li><a href="#why-choose" className="hover:text-amber-400 transition">Razorpay Secure Escrow</a></li>
+              <li><a href="#why-choose" className="hover:text-amber-400 transition">Doorstep Logistics & Tracking</a></li>
+              <li><Link to="/login" className="hover:text-amber-400 transition">Buyer Account Login</Link></li>
             </ul>
           </div>
 
           {/* Suppliers & Enterprise */}
           <div>
             <h4 className="text-white font-bold text-xs sm:text-sm tracking-wider uppercase mb-3.5">
-              Wholesalers & Sellers
+              Shopkeepers & Sellers
             </h4>
             <ul className="space-y-2 text-xs text-slate-400">
               <li><Link to="/signup?role=seller" className="hover:text-amber-400 transition font-semibold text-amber-400">Register as a Shopkeeper / Seller</Link></li>
-              <li><Link to="/login" className="hover:text-amber-400 transition">Supplier Central Login</Link></li>
+              <li><Link to="/login" className="hover:text-amber-400 transition">Seller Hub Login</Link></li>
               <li><a href="#why-choose" className="hover:text-amber-400 transition">Seller Verification & Trust</a></li>
-              <li><a href="#why-choose" className="hover:text-amber-400 transition">Global Export Inquiries</a></li>
-              <li><a href="#why-choose" className="hover:text-amber-400 transition">Domestic Wholesale RFQs</a></li>
+              <li><a href="#why-choose" className="hover:text-amber-400 transition">Product Catalog Guidelines</a></li>
               <li><a href="#why-choose" className="hover:text-amber-400 transition">Seller Protection Policy</a></li>
             </ul>
           </div>
 
         </div>
 
-        {/* Newsletter & RFQ Quick Strip */}
+        {/* Newsletter & Offers Quick Strip */}
         <div className="mt-10 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-800 grid md:grid-cols-2 gap-4 sm:gap-6 items-center">
           <div>
             <h4 className="text-white font-bold text-sm sm:text-base">Stay updated on exclusive wholesale deals</h4>

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import RFQModal from '../components/RFQModal';
 import SourcingAssistant from '../components/SourcingAssistant';
 import { CartModal } from '../user/CartModal';
 import { useStore } from '../zustand/store';
@@ -10,7 +9,6 @@ import { toast } from 'react-toastify';
 import { 
   Building2, 
   ShieldCheck, 
-  FileText, 
   Truck, 
   CheckCircle, 
   ArrowRight, 
@@ -28,7 +26,14 @@ import {
   PackageCheck,
   Zap,
   Check,
-  ShoppingCart
+  ShoppingCart,
+  ShoppingBag,
+  RotateCcw,
+  CreditCard,
+  Heart,
+  HelpCircle,
+  Headphones,
+  Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -90,358 +95,283 @@ const Home = () => {
   const addToCart = useStore(state => state.addToCart);
   const setIsCartOpen = useStore(state => state.setIsCartOpen);
 
-  // State for RFQ Modal
-  const [rfqModalOpen, setRfqModalOpen] = useState(false);
-  const [selectedProductForRFQ, setSelectedProductForRFQ] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllBrands, setShowAllBrands] = useState(false);
+  const [activeFaq, setActiveFaq] = useState(null);
 
-  // Direct Wholesale Purchase / Add To Cart Handler
+  // Direct Marketplace Add To Cart Handler
   const handleAddToCart = (prod) => {
     if (!user) {
-      toast.info("Please sign in to order wholesale products with Razorpay");
+      toast.info("Please sign in to add products to your cart");
       navigate('/login');
       return;
     }
-    const priceNum = parseInt(prod.estPrice.replace(/[^0-9]/g, '')) || 250;
-    const moqNum = parseInt(prod.moq.replace(/[^0-9]/g, '')) || 10;
     addToCart({
       _id: String(prod.id),
       title: prod.title,
-      price: priceNum,
-      moq: moqNum,
-      quantity: moqNum,
+      price: prod.price,
+      quantity: 1,
       image: prod.image,
-      unit: prod.moq.includes('set') ? 'set' : 'pc'
+      unit: 'pc'
     });
     setIsCartOpen(true);
-    toast.success(`Added ${prod.title} to Wholesale Cart!`);
+    toast.success(`Added "${prod.title}" to cart!`);
   };
 
-  // Quick RFQ Bar State
-  const [quickProduct, setQuickProduct] = useState('');
-  const [quickQty, setQuickQty] = useState('500');
-  const [quickCat, setQuickCat] = useState('Apparel & Garments');
-
-  const handleOpenRFQ = (productInfo = null) => {
-    setSelectedProductForRFQ(productInfo || { title: 'Direct Wholesale Quotation' });
-    setRfqModalOpen(true);
-  };
-
-  const handleQuickRFQSubmit = (e) => {
-    e.preventDefault();
-    if (!quickProduct) {
-      handleOpenRFQ({ title: 'Bulk Order Requirement', category: quickCat, moq: quickQty });
-    } else {
-      handleOpenRFQ({ title: quickProduct, category: quickCat, moq: quickQty });
+  const handleBuyNow = (prod) => {
+    if (!user) {
+      toast.info("Please sign in to order products");
+      navigate('/login');
+      return;
     }
+    addToCart({
+      _id: String(prod.id),
+      title: prod.title,
+      price: prod.price,
+      quantity: 1,
+      image: prod.image,
+      unit: 'pc'
+    });
+    setIsCartOpen(true);
   };
 
-  // Enterprise client brands matching the screenshot
+  // Enterprise client brands
   const clientBrands = [
-    { name: 'Amazon', role: 'Corporate Procurement' },
-    { name: 'Swiggy', role: 'Fleet Uniforms' },
-    { name: 'Aprilia', role: 'Official Merchandise' },
-    { name: 'Tata', role: 'Safety Workwear' },
-    { name: 'Delhivery', role: 'Custom Packaging' },
-    { name: 'Zepto', role: 'Delivery Gear & Bags' },
-    { name: 'Blue Dart', role: 'Courier Uniforms' },
-    { name: 'PhonePe', role: 'Welcome Kits' },
-    { name: 'Samsung', role: 'Retail Merchandise' },
-    { name: 'Suzuki', role: 'Plant Workwear' },
-    { name: 'Wipro', role: 'Corporate Gifting' },
-    { name: 'Airtel', role: 'Staff Uniforms' },
-    { name: 'Mahindra', role: 'Automotive Apparel' },
-    { name: 'Flipkart', role: 'Logistics Packaging' },
-    { name: 'Zomato', role: 'Rider Merchandise' },
-    { name: 'Reliance', role: 'Retail & Uniforms' }
+    { name: 'Amazon', role: 'Verified Seller Partner' },
+    { name: 'Swiggy', role: 'Fleet Merchandise' },
+    { name: 'Aprilia', role: 'Official Apparel' },
+    { name: 'Tata', role: 'Corporate Workwear' },
+    { name: 'Delhivery', role: 'Logistics Partner' },
+    { name: 'Zepto', role: 'Delivery Merchandise' },
+    { name: 'Blue Dart', role: 'Express Courier' },
+    { name: 'PhonePe', role: 'Corporate Gifting' },
+    { name: 'Samsung', role: 'Consumer Electronics' },
+    { name: 'Suzuki', role: 'Automotive Accessories' },
+    { name: 'Wipro', role: 'Office Essentials' },
+    { name: 'Airtel', role: 'Customer Uniforms' },
+    { name: 'Mahindra', role: 'Industrial Supplies' },
+    { name: 'Flipkart', role: 'Retail Partner' },
+    { name: 'Zomato', role: 'Merchant Gear' },
+    { name: 'Reliance', role: 'Retail Distribution' }
   ];
 
-  // Comprehensive Product Catalog matching the screenshot
-  const productCatalog = [
+  // Marketplace Products Catalog
+  const marketplaceProducts = [
     {
       id: 1,
-      title: 'T-Shirts (Round Neck & Polo)',
+      title: 'Men’s Ultra-Soft Bio-Washed Cotton Crew Neck T-Shirt',
       category: 'apparel',
-      categoryLabel: 'Apparel',
+      categoryLabel: 'Fashion',
       image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=700&q=80',
-      moq: '100 pcs',
-      estPrice: '₹149 - ₹240 / pc',
-      leadTime: '7-10 Days',
+      price: 399,
+      mrp: 899,
+      discount: '56% off',
+      rating: 4.8,
+      reviews: 1420,
+      delivery: 'FREE Delivery Tomorrow',
       badge: 'Bestseller'
     },
     {
       id: 2,
-      title: 'Hoodies & Sweatshirts',
-      category: 'apparel',
-      categoryLabel: 'Apparel',
-      image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=700&q=80',
-      moq: '50 pcs',
-      estPrice: '₹390 - ₹590 / pc',
-      leadTime: '10-12 Days',
-      badge: 'Fleece 320 GSM'
+      title: 'Premium Corporate Piqué Knit Polo T-Shirt (Embroidered)',
+      category: 'uniforms',
+      categoryLabel: 'Corporate Wear',
+      image: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=700&q=80',
+      price: 499,
+      mrp: 999,
+      discount: '50% off',
+      rating: 4.7,
+      reviews: 980,
+      delivery: 'FREE Delivery in 2 Days',
+      badge: 'Top Rated'
     },
     {
       id: 3,
-      title: 'Backpacks & Travel Bags',
-      category: 'bags',
-      categoryLabel: 'Bags & Luggage',
-      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=700&q=80',
-      moq: '50 pcs',
-      estPrice: '₹340 - ₹620 / pc',
-      leadTime: '12-15 Days',
-      badge: 'Water Resistant'
+      title: 'Heavyweight Unisex Pullover Fleece Hoodie (Winter Edition)',
+      category: 'apparel',
+      categoryLabel: 'Winterwear',
+      image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=700&q=80',
+      price: 899,
+      mrp: 1899,
+      discount: '53% off',
+      rating: 4.9,
+      reviews: 2150,
+      delivery: 'FREE Delivery Tomorrow',
+      badge: 'Hot Deal'
     },
     {
       id: 4,
-      title: 'School Backpacks & Kit Bags',
+      title: 'Anti-Theft Waterproof Laptop Backpack with USB Port',
       category: 'bags',
       categoryLabel: 'Bags & Luggage',
-      image: 'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=700&q=80',
-      moq: '100 pcs',
-      estPrice: '₹220 - ₹380 / pc',
-      leadTime: '10-14 Days',
-      badge: 'Heavy Duty'
+      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=700&q=80',
+      price: 1199,
+      mrp: 2499,
+      discount: '52% off',
+      rating: 4.8,
+      reviews: 3410,
+      delivery: 'FREE Delivery in 2 Days',
+      badge: 'Trending'
     },
     {
       id: 5,
-      title: 'Corporate Formal Shirts',
-      category: 'uniforms',
-      categoryLabel: 'Uniforms',
-      image: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=700&q=80',
-      moq: '50 pcs',
-      estPrice: '₹340 - ₹520 / pc',
-      leadTime: '8-10 Days',
-      badge: 'Custom Embroidered'
-    },
-    {
-      id: 6,
-      title: 'Eco-Friendly Canvas & Jute Totes',
-      category: 'bags',
-      categoryLabel: 'Bags & Packaging',
-      image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=700&q=80',
-      moq: '200 pcs',
-      estPrice: '₹45 - ₹95 / pc',
-      leadTime: '5-7 Days',
-      badge: '100% Organic'
-    },
-    {
-      id: 7,
-      title: 'School Uniform Sets (Boys & Girls)',
-      category: 'uniforms',
-      categoryLabel: 'Uniforms',
-      image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=700&q=80',
-      moq: '100 sets',
-      estPrice: '₹380 - ₹650 / set',
-      leadTime: '14-20 Days',
-      badge: 'Bulk Supply'
-    },
-    {
-      id: 8,
-      title: 'Industrial Safety & Workplace Workwear',
-      category: 'footwear',
-      categoryLabel: 'Industrial',
-      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=80',
-      moq: '50 sets',
-      estPrice: '₹420 - ₹780 / set',
-      leadTime: '10-15 Days',
-      badge: 'High-Vis & FR'
-    },
-    {
-      id: 9,
-      title: 'Security & Facility Staff Uniforms',
-      category: 'uniforms',
-      categoryLabel: 'Uniforms',
-      image: 'https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=700&q=80',
-      moq: '50 sets',
-      estPrice: '₹490 - ₹750 / set',
-      leadTime: '10-14 Days',
-      badge: 'Durable Fabric'
-    },
-    {
-      id: 10,
-      title: 'Hospital Scrubs & Doctor Lab Coats',
-      category: 'uniforms',
-      categoryLabel: 'Uniforms & Medical',
-      image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80',
-      moq: '100 pcs',
-      estPrice: '₹260 - ₹440 / pc',
-      leadTime: '7-10 Days',
-      badge: 'Antimicrobial'
-    },
-    {
-      id: 11,
-      title: 'Custom Promotional Caps & Hats',
-      category: 'apparel',
-      categoryLabel: 'Merchandise',
-      image: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=700&q=80',
-      moq: '100 pcs',
-      estPrice: '₹65 - ₹120 / pc',
-      leadTime: '7-9 Days',
-      badge: '3D Embroidery'
-    },
-    {
-      id: 12,
-      title: 'Hospitality & Hotel Chef Uniforms',
-      category: 'uniforms',
-      categoryLabel: 'Uniforms',
-      image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=700&q=80',
-      moq: '50 sets',
-      estPrice: '₹450 - ₹820 / set',
-      leadTime: '10-14 Days',
-      badge: 'Stain Resistant'
-    },
-    {
-      id: 13,
-      title: 'Premium Metal Executive Pens',
-      category: 'stationery',
-      categoryLabel: 'Corporate Gifts',
-      image: 'https://images.unsplash.com/photo-1585336261026-6b2f15f013d9?auto=format&fit=crop&w=700&q=80',
-      moq: '200 pcs',
-      estPrice: '₹35 - ₹110 / pc',
-      leadTime: '5-7 Days',
-      badge: 'Laser Engraved'
-    },
-    {
-      id: 14,
-      title: 'Hardcover Diaries & Corporate Planners',
-      category: 'stationery',
-      categoryLabel: 'Corporate Gifts',
-      image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=700&q=80',
-      moq: '100 pcs',
-      estPrice: '₹95 - ₹240 / pc',
-      leadTime: '7-10 Days',
-      badge: 'Gold Foiled'
-    },
-    {
-      id: 15,
-      title: 'Stainless Steel Insulated Flasks & Bottles',
+      title: 'Double-Wall Vacuum Insulated Stainless Steel Thermal Flask 1L',
       category: 'drinkware',
       categoryLabel: 'Drinkware',
       image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=700&q=80',
-      moq: '100 pcs',
-      estPrice: '₹165 - ₹320 / pc',
-      leadTime: '7-12 Days',
-      badge: '24h Hot & Cold'
+      price: 549,
+      mrp: 1299,
+      discount: '58% off',
+      rating: 4.7,
+      reviews: 890,
+      delivery: 'FREE Delivery Tomorrow',
+      badge: 'Bestseller'
     },
     {
-      id: 16,
-      title: 'Cotton Loungewear & Nightwear Sets',
-      category: 'apparel',
-      categoryLabel: 'Apparel',
-      image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=700&q=80',
-      moq: '100 sets',
-      estPrice: '₹280 - ₹460 / set',
-      leadTime: '12-16 Days',
-      badge: '100% Combed Cotton'
+      id: 6,
+      title: 'Eco-Friendly Heavy Duty Canvas Tote Bag with Zipper',
+      category: 'bags',
+      categoryLabel: 'Bags & Totes',
+      image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=700&q=80',
+      price: 249,
+      mrp: 599,
+      discount: '58% off',
+      rating: 4.6,
+      reviews: 640,
+      delivery: 'FREE Delivery in 3 Days',
+      badge: 'Eco Friendly'
     },
     {
-      id: 17,
-      title: 'Ceramic Mugs & Travel Coffee Tumblers',
-      category: 'drinkware',
-      categoryLabel: 'Drinkware',
-      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=700&q=80',
-      moq: '150 pcs',
-      estPrice: '₹55 - ₹130 / pc',
-      leadTime: '6-8 Days',
-      badge: 'Microwave Safe'
-    },
-    {
-      id: 18,
-      title: 'Steel-Toe Safety Shoes & Footwear',
+      id: 7,
+      title: 'All-Weather Industrial Steel-Toe Safety Work Boots',
       category: 'footwear',
       categoryLabel: 'Footwear & Safety',
       image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80',
-      moq: '50 pairs',
-      estPrice: '₹450 - ₹890 / pair',
-      leadTime: '10-15 Days',
+      price: 1299,
+      mrp: 2799,
+      discount: '54% off',
+      rating: 4.8,
+      reviews: 1820,
+      delivery: 'FREE Delivery Tomorrow',
       badge: 'ISI Certified'
     },
     {
-      id: 19,
-      title: 'Winter Puffer Jackets & Windbreakers',
-      category: 'apparel',
-      categoryLabel: 'Apparel',
-      image: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=700&q=80',
-      moq: '50 pcs',
-      estPrice: '₹590 - ₹1,150 / pc',
-      leadTime: '12-16 Days',
-      badge: 'Thermal Down'
-    },
-    {
-      id: 20,
-      title: 'Executive Welcome Kits & Gift Hampers',
+      id: 8,
+      title: 'Executive Matte Black Metal Rollerball Pen & Case Gift Set',
       category: 'stationery',
-      categoryLabel: 'Corporate Gifts',
-      image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=700&q=80',
-      moq: '25 boxes',
-      estPrice: '₹750 - ₹1,850 / box',
-      leadTime: '7-10 Days',
-      badge: 'Custom Branded'
+      categoryLabel: 'Stationery & Gifts',
+      image: 'https://images.unsplash.com/photo-1585336261026-6b2f15f013d9?auto=format&fit=crop&w=700&q=80',
+      price: 299,
+      mrp: 699,
+      discount: '57% off',
+      rating: 4.9,
+      reviews: 1120,
+      delivery: 'FREE Delivery in 2 Days',
+      badge: 'Premium Gift'
     },
     {
-      id: 21,
-      title: 'Hotel Bed Linen, Comforters & Duvets',
-      category: 'home',
-      categoryLabel: 'Home & Hospitality',
-      image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=700&q=80',
-      moq: '50 sets',
-      estPrice: '₹550 - ₹1,200 / set',
-      leadTime: '14-18 Days',
-      badge: '300-600 TC Sateen'
+      id: 9,
+      title: 'Premium Hardcover PU Leather Journal & Planner 2026',
+      category: 'stationery',
+      categoryLabel: 'Office Stationery',
+      image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=700&q=80',
+      price: 349,
+      mrp: 799,
+      discount: '56% off',
+      rating: 4.8,
+      reviews: 840,
+      delivery: 'FREE Delivery Tomorrow',
+      badge: 'Top Rated'
     },
     {
-      id: 22,
-      title: 'Traditional Ethnic Kurtas & Silk Sarees',
-      category: 'apparel',
-      categoryLabel: 'Apparel & Ethnic',
-      image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=700&q=80',
-      moq: '30 pcs',
-      estPrice: '₹420 - ₹1,400 / pc',
-      leadTime: '10-15 Days',
+      id: 10,
+      title: 'Hospitality & Culinary Master Chef Apron with Utility Pockets',
+      category: 'uniforms',
+      categoryLabel: 'Kitchen Wear',
+      image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=700&q=80',
+      price: 449,
+      mrp: 899,
+      discount: '50% off',
+      rating: 4.7,
+      reviews: 730,
+      delivery: 'FREE Delivery in 2 Days',
+      badge: 'Stain Proof'
+    },
+    {
+      id: 11,
+      title: 'High-Visibility Breathable Reflective Safety Vest with Pockets',
+      category: 'footwear',
+      categoryLabel: 'Safety Gear',
+      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=700&q=80',
+      price: 199,
+      mrp: 499,
+      discount: '60% off',
+      rating: 4.6,
+      reviews: 540,
+      delivery: 'FREE Delivery Tomorrow',
+      badge: 'High-Vis'
+    },
+    {
+      id: 12,
+      title: 'Minimalist Ceramic Coffee Mug & Coaster Set (Matte Finish)',
+      category: 'drinkware',
+      categoryLabel: 'Home & Kitchen',
+      image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=700&q=80',
+      price: 299,
+      mrp: 649,
+      discount: '54% off',
+      rating: 4.8,
+      reviews: 910,
+      delivery: 'FREE Delivery in 2 Days',
       badge: 'Handcrafted'
-    },
-    {
-      id: 23,
-      title: 'Waterproof Heavy Duty Rainwear',
-      category: 'apparel',
-      categoryLabel: 'Industrial & Seasonal',
-      image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=700&q=80',
-      moq: '100 pcs',
-      estPrice: '₹180 - ₹340 / pc',
-      leadTime: '8-12 Days',
-      badge: 'Double Layer'
-    },
-    {
-      id: 24,
-      title: 'Cotton Bath & Face Towels',
-      category: 'home',
-      categoryLabel: 'Home & Hotel',
-      image: 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=700&q=80',
-      moq: '200 pcs',
-      estPrice: '₹75 - ₹190 / pc',
-      leadTime: '7-10 Days',
-      badge: '500 GSM Plush'
     }
   ];
 
-  // Filtering products
-  const filteredProducts = productCatalog.filter((item) => {
-    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          item.categoryLabel.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter products by category and search
+  const filteredProducts = marketplaceProducts.filter((prod) => {
+    const matchesCategory = activeCategory === 'all' || prod.category === activeCategory;
+    const matchesSearch = prod.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          prod.categoryLabel.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   // Manufacturing Hubs Data
   const manufacturingHubs = [
-    { city: 'Tirupur, TN', category: 'Knitwear & T-Shirts', suppliers: '4,200+ Suppliers', icon: '👕' },
-    { city: 'Surat, Gujarat', category: 'Textiles & Synthetic Fabrics', suppliers: '8,500+ Weavers', icon: '🧵' },
-    { city: 'Moradabad, UP', category: 'Brass & Metal Drinkware', suppliers: '2,100+ Foundries', icon: '🏺' },
-    { city: 'Agra, UP', category: 'Leather & Safety Footwear', suppliers: '3,100+ Manufacturers', icon: '👞' },
-    { city: 'Ludhiana, Punjab', category: 'Woolen Garments & Activewear', suppliers: '2,800+ Mills', icon: '🧥' },
-    { city: 'Noida / NCR', category: 'Packaging & Custom Gifts', suppliers: '3,400+ Units', icon: '📦' }
+    { city: 'Tirupur, TN', category: 'apparel', label: 'Cotton Fashion & T-Shirts', sellers: '4,200+ Verified Sellers', icon: '👕' },
+    { city: 'Surat, Gujarat', category: 'apparel', label: 'Ethnic & Modern Fabrics', sellers: '8,500+ Top Sellers', icon: '🧵' },
+    { city: 'Moradabad, UP', category: 'drinkware', label: 'Metalware & Drinkware', sellers: '2,100+ Manufacturers', icon: '🏺' },
+    { city: 'Agra, UP', category: 'footwear', label: 'Footwear & Safety Gear', sellers: '3,100+ Shoemakers', icon: '👞' },
+    { city: 'Ludhiana, Punjab', category: 'uniforms', label: 'Winter Knitwear & Uniforms', sellers: '2,800+ Mills', icon: '🧥' },
+    { city: 'Noida / NCR', category: 'stationery', label: 'Stationery & Corporate Gifts', sellers: '3,400+ Brands', icon: '📦' }
+  ];
+
+  // Frequently Asked Questions (FAQ) for the Marketplace
+  const faqs = [
+    {
+      q: 'How do I place an order on RealBell BizMart?',
+      a: 'Browsing and ordering on RealBell BizMart is seamless! Select any marketplace product, choose your quantity, and click "Order Now" or "Add to Cart". Enter your shipping address and pay securely using Razorpay (UPI, Cards, Net Banking).'
+    },
+    {
+      q: 'What payment methods are supported on RealBell BizMart?',
+      a: 'We support all major payment modes via Razorpay including Google Pay, PhonePe, Paytm, BHIM UPI, Visa/Mastercard/RuPay credit & debit cards, and Net Banking across 50+ Indian banks. All transactions are protected with 256-bit SSL encryption.'
+    },
+    {
+      q: 'How can I track my order delivery in real time?',
+      a: 'Once your order is confirmed, you can track its delivery status directly from your "Track Order" page in your Buyer Dashboard. We provide real-time status steps: Order Placed → Confirmed & Paid → Processing → Dispatched → Out for Delivery → Delivered.'
+    },
+    {
+      q: 'Can I register as a seller / shopkeeper to list products?',
+      a: 'Yes! Anyone with a verified shop or business can register as a seller. Click "Become a Seller" in the navigation bar, sign up with a seller account, submit your business documents (GSTIN and shop address) for admin approval, and start listing your products to millions of buyers.'
+    },
+    {
+      q: 'How are sellers and products verified on RealBell BizMart?',
+      a: 'Every seller account undergoes mandatory business verification by our Admin team before product listings are approved. We check valid GSTIN registration, business credentials, and genuine catalog items to ensure 100% authentic products.'
+    },
+    {
+      q: 'What if I receive a damaged or incorrect product?',
+      a: 'RealBell BizMart offers complete Buyer Protection. If you receive a damaged or incorrect shipment, you can request an instant return or refund via your order dashboard or reach our 24/7 customer support team for immediate resolution.'
+    }
   ];
 
   return (
@@ -449,7 +379,6 @@ const Home = () => {
       
       {/* 1. Header / Navbar with Dark Mode Toggle */}
       <Navbar 
-        onOpenRFQ={handleOpenRFQ} 
         selectedCategory={activeCategory}
         onSelectCategory={(catId) => {
           setActiveCategory(catId);
@@ -460,293 +389,202 @@ const Home = () => {
         onToggleDarkMode={toggleDarkMode}
       />
 
-      {/* 2. Hero Section - Matching the modern marketplace aesthetic */}
+      {/* 2. Hero Section - Modern Marketplace Aesthetic */}
       <section className="relative bg-slate-950 text-white overflow-hidden">
-        {/* Modern Marketplace Background with dramatic lighting overlay */}
+        {/* Ambient Gradient Lighting */}
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity scale-105 transform hover:scale-100 transition-transform duration-1000"
+          className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity scale-105 transition-all duration-700"
           style={{
             backgroundImage: "url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=2000&q=80')"
           }}
         ></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-950/90 to-amber-950/40"></div>
         
-        {/* Gradient dark overlays */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-16 sm:pt-20 sm:pb-24 relative z-10">
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            {/* Left Hero Content with Motion */}
+            {/* Left Content Column */}
             <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="lg:col-span-7 space-y-5 sm:space-y-6"
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              className="lg:col-span-7 space-y-6 text-center lg:text-left"
             >
-              
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>RealBell BizMart • India's B2B Sourcing Hub</span>
-              </div>
+              {/* Trust Badge */}
+              <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-amber-400 text-xs sm:text-sm font-semibold backdrop-blur-md shadow-inner">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
+                <span>India's Premier Online Marketplace Platform</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                <span className="text-white text-[11px]">100% Verified Sellers</span>
+              </motion.div>
 
-              {/* Headline from Screenshot */}
-              <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
-                The marketplace <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-200">
-                  to the world
-                </span>
-              </h1>
+              {/* Main Headline */}
+              <motion.h1 variants={fadeInUp} className="text-3xl xs:text-4xl sm:text-5xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+                Shop Direct from Verified <br className="hidden sm:inline" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500">
+                  Shopkeepers & Brands
+                </span> Across India
+              </motion.h1>
 
-              {/* Subtitle */}
-              <p className="text-slate-300 text-sm sm:text-base lg:text-lg max-w-2xl leading-relaxed font-normal">
-                Connect directly with 50,000+ verified Indian wholesale suppliers, distributors, and brands. Direct marketplace pricing, custom bulk orders, assured quality inspections, and seamless door-to-door delivery.
-              </p>
+              {/* Sub-headline */}
+              <motion.p variants={fadeInUp} className="text-slate-300 text-xs sm:text-sm sm:leading-relaxed max-w-2xl mx-auto lg:mx-0 font-normal">
+                Discover trending apparel, uniforms, tech gadgets, bags, drinkware, and gifts with unbeatable marketplace pricing, Razorpay payment escrow, and doorstep express delivery.
+              </motion.p>
 
-              {/* Stats Bar */}
-              <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 border-t border-slate-800/80">
-                <div className="bg-slate-900/40 p-2 rounded-xl">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400">50,000+</div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 font-normal">Verified Sellers</div>
-                </div>
-                <div className="bg-slate-900/40 p-2 rounded-xl">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">1M+</div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 font-normal">Products Listed</div>
-                </div>
-                <div className="bg-slate-900/40 p-2 rounded-xl">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400">₹500 Cr+</div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 font-normal">Trade Handled</div>
-                </div>
-                <div className="bg-slate-900/40 p-2 rounded-xl">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">150+</div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 font-normal">Export Markets</div>
-                </div>
-              </div>
-
-              {/* CTA Action Buttons */}
-              <div className="pt-2 sm:pt-4 flex flex-wrap gap-3 sm:gap-4 items-center">
+              {/* Primary Call To Actions */}
+              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
                 <motion.button
                   whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => handleOpenRFQ({ title: 'Direct Wholesale Quotation' })}
-                  className="w-full sm:w-auto bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[length:200%_auto] hover:bg-right text-slate-950 font-semibold px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl shadow-lg hover:shadow-orange-500/30 transition-all duration-300 flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer"
+                  onClick={() => {
+                    const el = document.getElementById('product-catalog');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 font-bold px-7 sm:px-8 py-3.5 rounded-xl shadow-lg hover:shadow-orange-500/30 transition-all duration-300 text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <FileText className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-                  <span>Post Buying RFQ (Free)</span>
+                  <ShoppingBag className="w-4 h-4 text-slate-950" />
+                  <span>Explore Marketplace Deals</span>
                 </motion.button>
 
-                <motion.a
+                <motion.button
                   whileHover={{ scale: 1.04, y: -2 }}
                   whileTap={{ scale: 0.96 }}
-                  href="#product-catalog"
-                  className="w-full sm:w-auto bg-slate-800/80 hover:bg-slate-700 text-white font-medium px-6 py-3 sm:py-3.5 rounded-xl border border-slate-700 hover:border-slate-500 transition flex items-center justify-center gap-2 text-xs sm:text-sm"
+                  onClick={() => navigate('/signup?role=seller')}
+                  className="w-full sm:w-auto bg-slate-900/90 hover:bg-slate-800 text-white font-semibold px-6 sm:px-7 py-3.5 rounded-xl border border-slate-700/80 hover:border-amber-400/60 transition text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Layers className="w-4 h-4 text-amber-400" />
-                  <span>Browse Products</span>
-                </motion.a>
-              </div>
+                  <Store className="w-4 h-4 text-amber-400" />
+                  <span>Become a Seller</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                </motion.button>
+              </motion.div>
 
+              {/* Mini Feature Tickers */}
+              <motion.div variants={fadeInUp} className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 text-xs text-slate-400">
+                <div className="flex items-center gap-1.5 font-medium">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>100% Razorpay Protection</span>
+                </div>
+                <div className="flex items-center gap-1.5 font-medium">
+                  <Truck className="w-4 h-4 text-amber-400" />
+                  <span>Free Express Delivery</span>
+                </div>
+                <div className="flex items-center gap-1.5 font-medium">
+                  <RotateCcw className="w-4 h-4 text-blue-400" />
+                  <span>7-Day Easy Returns</span>
+                </div>
+              </motion.div>
             </motion.div>
 
-            {/* Right Hero: 3 Distinct Feature Cards (Authentic to the screenshot) */}
+            {/* Right Visual Stats Column */}
             <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
-              className="lg:col-span-5 space-y-3 sm:space-y-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="lg:col-span-5 grid grid-cols-2 gap-3 sm:gap-4"
             >
-              
-              {/* Card 1: Orange/Red Card - Post Buying Requirement */}
-              <motion.div 
-                whileHover={{ scale: 1.025, y: -4 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleOpenRFQ({ title: 'Bulk Buyer RFQ' })}
-                className="group relative bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 rounded-2xl p-4 sm:p-5 shadow-xl border border-orange-400/30 transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex items-start gap-3.5 sm:gap-4">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition duration-300">
-                    <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold text-sm sm:text-base truncate">
-                        Post Buying Requirement
-                      </h3>
-                      <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1.5 transition" />
-                    </div>
-                    <p className="text-orange-100 text-xs mt-1 leading-relaxed line-clamp-2 font-normal">
-                      Get custom quotations directly from verified wholesale suppliers within 24 hours at marketplace wholesale prices.
-                    </p>
-                    <span className="inline-block mt-2 text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-amber-200">
-                      Submit RFQ in 60s →
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
+              <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-4 sm:p-5 hover:border-amber-500/50 transition">
+                <div className="text-amber-400 font-bold text-2xl sm:text-3xl">50,000+</div>
+                <p className="text-xs text-slate-300 font-semibold mt-1">Verified Products</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Fashion, Tech, Living & Office</p>
+              </div>
 
-              {/* Card 2: Royal Blue Card - Bulk Wholesale & Private Label */}
-              <motion.div 
-                whileHover={{ scale: 1.025, y: -4 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleOpenRFQ({ title: 'Bulk Wholesale & Private Label' })}
-                className="group relative bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 rounded-2xl p-4 sm:p-5 shadow-xl border border-blue-400/30 transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex items-start gap-3.5 sm:gap-4">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition duration-300">
-                    <Store className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold text-sm sm:text-base truncate">
-                        Bulk Wholesale & Private Label
-                      </h3>
-                      <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1.5 transition" />
-                    </div>
-                    <p className="text-blue-100 text-xs mt-1 leading-relaxed line-clamp-2 font-normal">
-                      Source wholesale uniforms, apparel, corporate gifts, bottles, packaging & private label lines.
-                    </p>
-                    <span className="inline-block mt-2 text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-blue-200">
-                      Start Bulk Order →
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
+              <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-4 sm:p-5 hover:border-amber-500/50 transition">
+                <div className="text-emerald-400 font-bold text-2xl sm:text-3xl">10,000+</div>
+                <p className="text-xs text-slate-300 font-semibold mt-1">Active Shopkeepers</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Pan-India Verified Merchants</p>
+              </div>
 
-              {/* Card 3: Emerald Green Card - Verified Seller Network */}
-              <motion.div 
-                whileHover={{ scale: 1.025, y: -4 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  const el = document.getElementById('why-choose');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="group relative bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 rounded-2xl p-4 sm:p-5 shadow-xl border border-emerald-400/30 transition-all duration-300 cursor-pointer"
-              >
-                <div className="flex items-start gap-3.5 sm:gap-4">
-                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition duration-300">
-                    <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold text-sm sm:text-base truncate">
-                        Verified Seller Network
-                      </h3>
-                      <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1.5 transition" />
-                    </div>
-                    <p className="text-emerald-100 text-xs mt-1 leading-relaxed line-clamp-2 font-normal">
-                      100% verified seller profiles, authentic business compliance, and Escrow payment guarantee.
-                    </p>
-                    <span className="inline-block mt-2 text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-emerald-200">
-                      Learn About Assurance →
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
+              <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-4 sm:p-5 hover:border-amber-500/50 transition">
+                <div className="text-blue-400 font-bold text-2xl sm:text-3xl">₹0</div>
+                <p className="text-xs text-slate-300 font-semibold mt-1">Free Delivery</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">On all marketplace orders</p>
+              </div>
 
+              <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-4 sm:p-5 hover:border-amber-500/50 transition">
+                <div className="text-purple-400 font-bold text-2xl sm:text-3xl">24/7</div>
+                <p className="text-xs text-slate-300 font-semibold mt-1">Buyer Support</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Toll-Free & Live WhatsApp</p>
+              </div>
             </motion.div>
 
           </div>
         </div>
       </section>
 
-      {/* 3. Fast RFQ Quick-Order Bar */}
-      <section className="bg-amber-500 dark:bg-amber-600 py-3.5 sm:py-4 px-3 sm:px-6 shadow-md relative z-10 transition-colors">
-        <div className="max-w-7xl mx-auto">
-          <form onSubmit={handleQuickRFQSubmit} className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-slate-950 font-semibold text-xs sm:text-sm lg:text-base shrink-0">
-              <Zap className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950" />
-              <span>Instant Wholesale RFQ Builder:</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full flex-1">
-              <input
-                type="text"
-                value={quickProduct}
-                onChange={(e) => setQuickProduct(e.target.value)}
-                placeholder="What product do you need? (e.g. 500 T-Shirts)"
-                className="bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden border border-amber-600 dark:border-amber-700"
-              />
-
-              <select
-                value={quickCat}
-                onChange={(e) => setQuickCat(e.target.value)}
-                className="bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-100 focus:outline-hidden border border-amber-600 dark:border-amber-700"
-              >
-                <option value="Apparel & Garments">Apparel & Garments</option>
-                <option value="Corporate Uniforms">Corporate Uniforms</option>
-                <option value="Bags & Luggage">Bags & Luggage</option>
-                <option value="Corporate Gifting & Stationery">Corporate Gifting & Stationery</option>
-                <option value="Drinkware & Bottles">Drinkware & Bottles</option>
-                <option value="Industrial Safety">Industrial Safety</option>
-                <option value="Packaging">Packaging</option>
-              </select>
-
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={quickQty}
-                  onChange={(e) => setQuickQty(e.target.value)}
-                  placeholder="Qty (pcs)"
-                  className="w-1/2 bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden border border-amber-600 dark:border-amber-700"
-                />
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  type="submit"
-                  className="w-1/2 bg-slate-950 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm rounded-xl py-2 px-3 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
-                >
-                  <span>Get Quotes</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </motion.button>
+      {/* 3. Value Props Strip */}
+      <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                <Truck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Pan-India Express Delivery</h4>
+                <p className="text-[11px] text-slate-500">Fast doorstep shipping</p>
               </div>
             </div>
-          </form>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Razorpay Secure Escrow</h4>
+                <p className="text-[11px] text-slate-500">100% payment safety</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+                <RotateCcw className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">7-Day Easy Returns</h4>
+                <p className="text-[11px] text-slate-500">Hassle-free replacement</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+                <Headphones className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">24/7 Customer Care</h4>
+                <p className="text-[11px] text-slate-500">Dedicated assistance</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 4. Trusted by Leading Brands & Global Enterprises (Matching the uploaded screenshot) */}
-      <section className="py-12 sm:py-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
+      {/* 4. Enterprise Brands Trust Bar */}
+      <section className="py-10 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-12"
-          >
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-amber-400 bg-orange-50 dark:bg-amber-950/40 px-3 py-1 rounded-full border border-orange-200 dark:border-amber-800/50">
-              Enterprise Procurement Network
+          <div className="text-center mb-6">
+            <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
+              Trusted by 10,000+ Leading Indian Brands & Merchants
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-2.5">
-              Powering Procurement for 500+ Global Enterprises & Leading Brands
-            </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2 font-normal">
-              From Fortune 500 corporations to hyper-growth businesses, procurement teams rely on RealBell BizMart for contract manufacturing and wholesale supplies.
-            </p>
-          </motion.div>
+          </div>
 
-          {/* Grid of Brand Logos */}
           <motion.div 
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={staggerContainer}
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4"
+            className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5 sm:gap-3"
           >
-            {(showAllBrands ? clientBrands : clientBrands.slice(0, 12)).map((brand, idx) => (
-              <motion.div
+            {(showAllBrands ? clientBrands : clientBrands.slice(0, 8)).map((brand, idx) => (
+              <motion.div 
                 key={idx}
-                variants={scaleIn}
-                whileHover={{ y: -4, scale: 1.03 }}
-                transition={{ duration: 0.2 }}
-                className="group h-20 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-amber-400 dark:hover:border-amber-500 rounded-xl p-3 flex flex-col items-center justify-center transition shadow-2xs hover:shadow-lg cursor-default"
+                variants={fadeInUp}
+                whileHover={{ y: -3, scale: 1.03 }}
+                className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-center shadow-2xs hover:border-amber-400 transition"
               >
-                <span className="text-slate-800 dark:text-slate-100 font-semibold text-sm sm:text-base tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block">
                   {brand.name}
                 </span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-400 font-normal flex items-center gap-1 mt-0.5 truncate max-w-full">
+                <span className="text-[10px] text-slate-400 flex items-center justify-center gap-1 mt-0.5">
                   <CheckCircle className="w-2.5 h-2.5 text-emerald-500 shrink-0" />
                   <span className="truncate">{brand.role}</span>
                 </span>
@@ -754,213 +592,200 @@ const Home = () => {
             ))}
           </motion.div>
 
-          <div className="text-center mt-6">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          <div className="text-center mt-5">
+            <button
               onClick={() => setShowAllBrands(!showAllBrands)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-amber-400 hover:text-orange-700 bg-orange-50 dark:bg-slate-800 hover:bg-orange-100 dark:hover:bg-slate-700 px-5 py-2.5 rounded-xl transition cursor-pointer border border-orange-200 dark:border-slate-700"
+              className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
             >
               <span>{showAllBrands ? 'Show Less' : 'View More Brands'}</span>
               <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAllBrands ? 'rotate-90' : ''}`} />
-            </motion.button>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* 5. Major Manufacturing Clusters in India */}
-      <section className="py-12 sm:py-16 bg-slate-100/70 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 transition-colors">
+      {/* 5. Direct Sourcing Hubs */}
+      <section className="py-12 sm:py-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-            className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4"
-          >
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
               <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-                Direct Sourcing Hubs
+                Direct Merchant Hubs
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1">
-                India's Key Manufacturing Clusters on RealBell
+                Explore Products by Regional Manufacturing Centers
               </h2>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
-              Tap directly into region-specific industrial hubs specializing in heritage textile weaving, heavy knitwear, metalware, and high-spec leather craft.
+              Tap directly into India's most celebrated industrial clusters and artisan hubs. Click any region to filter products.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={staggerContainer}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4"
-          >
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {manufacturingHubs.map((hub, idx) => (
               <motion.div 
                 key={idx}
-                variants={scaleIn}
-                whileHover={{ y: -6, scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => handleOpenRFQ({ title: `${hub.category} Bulk Sourcing`, category: hub.category })}
-                className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-400 shadow-2xs hover:shadow-xl transition-all duration-300 cursor-pointer text-center group"
+                whileHover={{ y: -5, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setActiveCategory(hub.category);
+                  const el = document.getElementById('product-catalog');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className={`bg-slate-50 dark:bg-slate-850 rounded-2xl p-4 border transition cursor-pointer text-center group ${
+                  activeCategory === hub.category ? 'border-amber-500 shadow-md' : 'border-slate-200 dark:border-slate-800 hover:border-amber-400'
+                }`}
               >
-                <div className="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">{hub.icon}</div>
-                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">{hub.city}</h4>
-                <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium mt-1 truncate">{hub.category}</p>
-                <span className="inline-block mt-2 text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold px-2 py-0.5 rounded-full group-hover:bg-amber-100 dark:group-hover:bg-amber-950/60 group-hover:text-amber-900 dark:group-hover:text-amber-300 transition">
-                  {hub.suppliers}
+                <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{hub.icon}</div>
+                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">{hub.city}</h4>
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1 truncate">{hub.label}</p>
+                <span className="inline-block mt-2 text-[10px] bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-2 py-0.5 rounded-full">
+                  {hub.sellers}
                 </span>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* 6. Master Product & Category Grid (Directly mirroring the uploaded design) */}
-      <section id="product-catalog" className="py-14 sm:py-20 bg-white dark:bg-slate-900 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      {/* 6. Marketplace Product Catalog */}
+      <section id="product-catalog" className="py-14 sm:py-20 bg-slate-50 dark:bg-slate-950 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
           
           {/* Section Header */}
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-            className="text-center max-w-3xl mx-auto mb-10"
-          >
-            <span className="text-xs font-semibold uppercase tracking-wider text-orange-600 dark:text-amber-400 bg-orange-50 dark:bg-amber-950/40 px-3 py-1 rounded-full border border-orange-200 dark:border-amber-800/50">
-              Verified Wholesale Catalog
+          <div className="text-center max-w-2xl mx-auto">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3.5 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
+              Trending Marketplace Catalog
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mt-2">
-              Explore Wholesale Marketplace Products
+            <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 dark:text-white mt-2">
+              Featured Products & Top Deals
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2 font-normal">
-              All items available in bulk wholesale lots with competitive volume pricing.
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2">
+              Quality verified products delivered directly from Indian sellers with 100% payment escrow.
             </p>
-          </motion.div>
+          </div>
 
           {/* Filter Bar & Search */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-8 bg-slate-50 dark:bg-slate-850 p-2.5 sm:p-3 rounded-2xl border border-slate-200 dark:border-slate-800 transition-colors">
-            
-            {/* Category Filter Pills with horizontal scroll on mobile */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full md:w-auto pb-1 md:pb-0">
-              {[
-                { id: 'all', label: 'All Products' },
-                { id: 'apparel', label: 'Apparel & Wear' },
-                { id: 'uniforms', label: 'Uniforms' },
-                { id: 'bags', label: 'Bags & Luggage' },
-                { id: 'stationery', label: 'Gifts & Stationery' },
-                { id: 'drinkware', label: 'Drinkware' },
-                { id: 'footwear', label: 'Footwear & Safety' },
-                { id: 'home', label: 'Home Textiles' },
-              ].map((tab) => (
-                <motion.button
-                  key={tab.id}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setActiveCategory(tab.id)}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
-                    activeCategory === tab.id
-                      ? 'bg-amber-500 text-slate-950 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-700/60'
-                  }`}
-                >
-                  {tab.label}
-                </motion.button>
-              ))}
-            </div>
-
-            {/* In-Catalog Search */}
-            <div className="relative w-full md:w-64">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-              <input
-                type="text"
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Search Input */}
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <input 
+                type="text" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Filter by keyword..."
-                className="w-full pl-8 pr-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl focus:outline-hidden focus:ring-2 focus:ring-amber-500 font-normal"
+                placeholder="Search products by keyword..."
+                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-amber-500"
               />
+            </div>
+
+            {/* Category Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto no-scrollbar pb-1 text-xs">
+              {[
+                { id: 'all', label: 'All Products' },
+                { id: 'apparel', label: 'Fashion & Apparel' },
+                { id: 'uniforms', label: 'Workwear & Uniforms' },
+                { id: 'bags', label: 'Bags & Luggage' },
+                { id: 'drinkware', label: 'Drinkware & Living' },
+                { id: 'footwear', label: 'Footwear & Safety' },
+                { id: 'stationery', label: 'Gifts & Stationery' }
+              ].map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-3.5 py-1.5 rounded-xl font-semibold whitespace-nowrap transition cursor-pointer ${
+                    activeCategory === cat.id
+                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Grid of Product Cards with SCROLLING ANIMATION for every card */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {filteredProducts.map((prod, idx) => (
+          {/* Product Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filteredProducts.map((prod) => (
               <motion.div
                 key={prod.id}
-                initial={{ opacity: 0, y: 35, scale: 0.95 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0.15, margin: "0px 0px -40px 0px" }}
-                transition={{ 
-                  duration: 0.45, 
-                  ease: [0.22, 1, 0.36, 1], 
-                  delay: (idx % 4) * 0.08 
-                }}
-                whileHover={{ y: -7 }}
-                className="group bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-500/70 overflow-hidden shadow-2xs hover:shadow-2xl dark:hover:shadow-amber-500/5 transition-all duration-300 flex flex-col"
+                whileHover={{ y: -6 }}
+                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-500/70 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
               >
-                {/* Title on Top (Matching the exact styling in the screenshot) */}
-                <div className="p-3 text-center border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60">
-                  <h3 className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate" title={prod.title}>
-                    {prod.title}
-                  </h3>
-                </div>
-
-                {/* Product Image Container */}
-                <div className="relative aspect-4/3 bg-slate-100 dark:bg-slate-850 overflow-hidden">
-                  <img
-                    src={prod.image}
-                    alt={prod.title}
-                    className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  {/* Badge */}
-                  <span className="absolute top-2.5 left-2.5 bg-slate-950/80 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
-                    {prod.badge}
-                  </span>
-                  <span className="absolute top-2.5 right-2.5 bg-amber-500 text-slate-950 text-[10px] font-semibold px-2 py-0.5 rounded-md shadow-xs">
-                    MOQ: {prod.moq}
-                  </span>
-                </div>
-
-                {/* Price & Lead Time Meta */}
-                <div className="p-3 bg-white dark:bg-slate-950 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800">
-                  <div>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-normal">Est. Wholesale Price</span>
-                    <span className="font-semibold text-slate-900 dark:text-white">{prod.estPrice}</span>
+                <div>
+                  {/* Image Container with Badge */}
+                  <div className="relative aspect-4/3 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    <img
+                      src={prod.image}
+                      alt={prod.title}
+                      className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    {prod.badge && (
+                      <span className="absolute top-3 left-3 bg-amber-500 text-slate-950 text-[10px] font-bold px-2.5 py-0.5 rounded-md shadow-xs">
+                        {prod.badge}
+                      </span>
+                    )}
+                    <span className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                      {prod.discount}
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-normal">Lead Time</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{prod.leadTime}</span>
+
+                  {/* Body Content */}
+                  <div className="p-4 space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      {prod.categoryLabel}
+                    </span>
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug" title={prod.title}>
+                      {prod.title}
+                    </h3>
+
+                    {/* Rating & Reviews */}
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold text-[11px]">
+                        <Star className="w-3 h-3 fill-emerald-600 dark:fill-emerald-400 text-emerald-600 dark:text-emerald-400" />
+                        <span>{prod.rating}</span>
+                      </span>
+                      <span className="text-[11px] text-slate-400">({prod.reviews} ratings)</span>
+                    </div>
+
+                    {/* Price Block */}
+                    <div className="pt-1 flex items-baseline gap-2">
+                      <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        ₹{prod.price.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-xs text-slate-400 line-through">
+                        ₹{prod.mrp.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                      {prod.delivery}
+                    </p>
                   </div>
                 </div>
 
-                {/* Product Action Buttons: Buy Now & Request Quote */}
-                <div className="p-3 bg-white dark:bg-slate-950 mt-auto grid grid-cols-2 gap-2">
+                {/* Direct Action Buttons: Add To Cart & Buy Now */}
+                <div className="p-4 pt-0 grid grid-cols-2 gap-2 mt-auto">
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.96 }}
                     onClick={() => handleAddToCart(prod)}
-                    className="w-full bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-950 font-bold text-xs py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-                    title="Order with Razorpay"
+                    className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200 dark:border-slate-700"
+                    title="Add to Shopping Cart"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>Order Now</span>
+                    <span>Cart</span>
                   </motion.button>
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.96 }}
-                    onClick={() => handleOpenRFQ(prod)}
-                    className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-xs py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-1 cursor-pointer"
-                    title="Custom RFQ Quotation"
+                    onClick={() => handleBuyNow(prod)}
+                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    title="Order Now with Razorpay"
                   >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>Post RFQ</span>
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span>Buy Now</span>
                   </motion.button>
                 </div>
               </motion.div>
@@ -968,379 +793,195 @@ const Home = () => {
           </div>
 
           {filteredProducts.length === 0 && (
-            <div className="text-center py-16 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 p-8">
               <PackageCheck className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <h4 className="font-bold text-slate-800 dark:text-white">No products match your filter</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal">Try clearing search keywords or selecting All Categories.</p>
+              <h4 className="font-bold text-slate-800 dark:text-white">No products match your search</h4>
+              <p className="text-xs text-slate-500 mt-1">Try clearing keywords or switching categories.</p>
               <button
                 onClick={() => { setActiveCategory('all'); setSearchTerm(''); }}
-                className="mt-4 bg-amber-500 text-slate-950 font-semibold text-xs px-4 py-2 rounded-xl"
+                className="mt-4 bg-amber-500 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl cursor-pointer"
               >
                 Reset Filters
               </button>
             </div>
           )}
 
-          {/* Load More Button */}
-          <div className="text-center mt-12">
-            <motion.button
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => handleOpenRFQ({ title: 'Full Product Catalog Inquiry' })}
-              className="w-full sm:w-auto bg-slate-950 dark:bg-slate-800 hover:bg-slate-900 dark:hover:bg-slate-700 text-white font-medium text-xs sm:text-sm px-8 py-3.5 rounded-xl border border-slate-800 dark:border-slate-700 shadow-md transition inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Can't find your product? Request Custom Sourcing</span>
-              <ArrowRight className="w-4 h-4 text-amber-400" />
-            </motion.button>
-          </div>
-
         </div>
       </section>
 
       {/* 7. Why Choose RealBell BizMart (Trust & Value Props) */}
       <section id="why-choose" className="py-16 sm:py-20 bg-slate-950 text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 space-y-12">
           
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-            className="text-center max-w-3xl mx-auto mb-12 sm:mb-16"
-          >
+          <div className="text-center max-w-2xl mx-auto">
             <span className="text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
-              The RealBell Advantage
+              The RealBell Guarantee
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold text-white mt-3">
-              Why Global Businesses Source on RealBell BizMart
+              Why Customers Love Shopping on RealBell BizMart
             </h2>
             <p className="text-slate-400 text-xs sm:text-sm mt-2">
-              We eliminate intermediaries, mitigate procurement fraud, and guarantee contract terms from order placement to final delivery.
+              We connect you directly to authentic manufacturers & shopkeepers with bank-grade payment security.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={staggerContainer}
-            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
-          >
-            {/* Value 1 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 hover:border-amber-400/50 transition-all duration-300"
-            >
-              <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
-                <TrendingUp className="w-6 h-6" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 hover:border-amber-400/50 transition">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
+                <Tag className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-base text-white mb-2">Direct Wholesale Pricing</h3>
-              <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                Save 25% to 40% compared to local retail middlemen and brokers. You transact directly with verified wholesale distributor rates.
+              <h3 className="font-bold text-base text-white mb-2">Direct Merchant Pricing</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Save significantly compared to high-margin retail stores by shopping directly from verified Indian shopkeepers.
               </p>
-            </motion.div>
+            </div>
 
-            {/* Value 2 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 hover:border-emerald-400/50 transition-all duration-300"
-            >
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 hover:border-emerald-400/50 transition">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-base text-white mb-2">Verified Seller Audits</h3>
-              <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                Every listed seller undergoes business compliance verification. We audit GST credentials, catalog authenticity, and seller track records.
+              <h3 className="font-bold text-base text-white mb-2">100% Genuine & Verified</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Every merchant's GSTIN and business credentials are verified by our Admin team before product listings are published.
               </p>
-            </motion.div>
+            </div>
 
-            {/* Value 3 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 hover:border-blue-400/50 transition-all duration-300"
-            >
-              <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
-                <CheckCircle className="w-6 h-6" />
+            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 hover:border-blue-400/50 transition">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-base text-white mb-2">Trade Assurance & Escrow</h3>
-              <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                Payments are securely placed in RealBell Escrow. Funds are only transferred after third-party quality inspection passes pre-shipment tests.
+              <h3 className="font-bold text-base text-white mb-2">Razorpay Escrow Protection</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Pay safely with UPI, debit/credit cards, and net banking. Funds are securely managed until delivery.
               </p>
-            </motion.div>
+            </div>
 
-            {/* Value 4 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 hover:border-orange-400/50 transition-all duration-300"
-            >
-              <div className="w-12 h-12 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center mb-4">
-                <Truck className="w-6 h-6" />
+            <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 hover:border-purple-400/50 transition">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
+                <RotateCcw className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-base text-white mb-2">Doorstep Logistics</h3>
-              <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                Full logistics orchestration across India and 150+ countries. RealBell manages domestic freight, customs documentation, and container shipping.
+              <h3 className="font-bold text-base text-white mb-2">Hassle-Free Returns</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Not satisfied with your item? Enjoy easy 7-day replacements and friendly support on all eligible products.
               </p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
         </div>
       </section>
 
-      {/* 8. How It Works (B2B Sourcing Workflow) */}
-      <section id="how-it-works" className="py-16 sm:py-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      {/* 8. Frequently Asked Questions (FAQ) - Interactive Accordion */}
+      <section id="faq" className="py-14 sm:py-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
           
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-            className="text-center max-w-3xl mx-auto mb-12 sm:mb-16"
-          >
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-amber-400 bg-orange-50 dark:bg-amber-950/40 px-3 py-1 rounded-full border border-orange-200 dark:border-amber-800/50">
-              Simple 4-Step Wholesale Buying
+          <div className="text-center space-y-2">
+            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 px-3.5 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
+              Got Questions?
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 dark:text-white mt-3">
-              How Buying Works on RealBell BizMart
+            <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 dark:text-white">
+              Frequently Asked Questions (FAQs)
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2">
-              From order specs to your doorstep in 4 transparent stages.
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+              Everything you need to know about shopping, payment security, order tracking, and selling on RealBell BizMart.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={staggerContainer}
-            className="grid sm:grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            
-            {/* Step 1 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-50 dark:bg-slate-850 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 relative text-center hover:border-amber-400 transition"
-            >
-              <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center mx-auto mb-4 shadow-sm">
-                1
+          <div className="space-y-3">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition shadow-2xs"
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveFaq(activeFaq === index ? null : index)}
+                  className="w-full text-left px-5 py-4 bg-slate-50/50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs sm:text-sm text-slate-900 dark:text-white flex justify-between items-center transition cursor-pointer"
+                >
+                  <span className="pr-4">{faq.q}</span>
+                  <ChevronRight
+                    className={`w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200 ${
+                      activeFaq === index ? 'rotate-90 text-amber-600 dark:text-amber-400' : ''
+                    }`}
+                  />
+                </button>
+                <AnimatePresence>
+                  {activeFaq === index && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="px-5 py-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 leading-relaxed border-t border-slate-100 dark:border-slate-800 font-normal overflow-hidden"
+                    >
+                      {faq.a}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-2">Post RFQ</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Submit product specifications, required quantity, target budget, and design files via our quick RFQ form.
-              </p>
-            </motion.div>
+            ))}
+          </div>
 
-            {/* Step 2 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-50 dark:bg-slate-850 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 relative text-center hover:border-amber-400 transition"
+          <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Still have questions?</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Our customer support team is available 24/7 to help.</p>
+            </div>
+            <a
+              href="tel:18008907325"
+              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl transition inline-flex items-center gap-1.5"
             >
-              <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center mx-auto mb-4 shadow-sm">
-                2
-              </div>
-              <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-2">Compare Quotes</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Receive 3 to 5 verified supplier quotes within 24 hours. Compare pricing, MOQs, and lead times.
-              </p>
-            </motion.div>
-
-            {/* Step 3 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-50 dark:bg-slate-850 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 relative text-center hover:border-amber-400 transition"
-            >
-              <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center mx-auto mb-4 shadow-sm">
-                3
-              </div>
-              <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-2">Sample & Proofing</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Approve pre-production samples. Once you approve the physical sample or batch quote, bulk fulfillment commences.
-              </p>
-            </motion.div>
-
-            {/* Step 4 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-slate-50 dark:bg-slate-850 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 relative text-center hover:border-amber-400 transition"
-            >
-              <div className="w-10 h-10 rounded-full bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center mx-auto mb-4 shadow-sm">
-                4
-              </div>
-              <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-2">QC & Delivery</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                On-site AQL 2.5 quality control inspection performed before dispatch. Safe delivery to your business warehouse.
-              </p>
-            </motion.div>
-
-          </motion.div>
+              <PhoneCall className="w-3.5 h-3.5" />
+              <span>1800-890-REAL (7325)</span>
+            </a>
+          </div>
 
         </div>
       </section>
 
-      {/* 9. Buyer Testimonials & Real Success Stories */}
-      <section className="py-16 sm:py-20 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-            className="text-center max-w-3xl mx-auto mb-12 sm:mb-14"
-          >
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-amber-400 bg-orange-50 dark:bg-amber-950/40 px-3 py-1 rounded-full border border-orange-200 dark:border-amber-800/50">
-              Client Testimonials
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-2">
-              Trusted by Procurement Leaders Across Industries
-            </h2>
-          </motion.div>
-
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={staggerContainer}
-            className="grid md:grid-cols-3 gap-6"
-          >
-            
-            {/* Testimonial 1 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 hover:shadow-xl transition"
-            >
-              <div className="flex text-amber-400 gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400" />
-                ))}
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed italic">
-                "We sourced 15,000 custom corporate onboarding gift hampers and backpacks through RealBell BizMart. The direct wholesale marketplace pricing saved our procurement department over ₹18 Lakhs compared to traditional distributors."
-              </p>
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-xs">
-                  AK
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900 dark:text-white">Arunabh Kulkarni</h4>
-                  <p className="text-[11px] text-slate-400">Head of Procurement, FinTech Unicorn</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 2 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 hover:shadow-xl transition"
-            >
-              <div className="flex text-amber-400 gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400" />
-                ))}
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed italic">
-                "Managing school uniform bulk procurement for 22 branch campuses was always chaotic. RealBell's verified Tirupur wholesale partners delivered 40,000 sets 10 days ahead of our academic calendar with zero defect rejection."
-              </p>
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
-                  SM
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900 dark:text-white">Dr. Shalini Mathur</h4>
-                  <p className="text-[11px] text-slate-400">Director of Operations, K-12 School Chain</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 3 */}
-            <motion.div 
-              variants={fadeInUp}
-              whileHover={{ y: -6 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xs space-y-4 hover:shadow-xl transition"
-            >
-              <div className="flex text-amber-400 gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400" />
-                ))}
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed italic">
-                "RealBell Escrow gave us the peace of mind to order heavy-duty industrial workwear and safety boots directly from verified Agra wholesale suppliers. The quality inspection report was 100% accurate."
-              </p>
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs">
-                  VG
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900 dark:text-white">Vikramaditya Gill</h4>
-                  <p className="text-[11px] text-slate-400">VP Supply Chain, Infrastructure & Logistics</p>
-                </div>
-              </div>
-            </motion.div>
-
-          </motion.div>
-
-        </div>
-      </section>
-
-      {/* 10. Supplier Onboarding & Enterprise CTA Banner */}
+      {/* 9. Seller Invitation & Marketplace CTA Banner */}
       <section className="py-14 sm:py-20 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950 text-white relative">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-5 sm:space-y-6">
-          <span className="inline-block bg-amber-500 text-slate-950 font-semibold text-xs px-4 py-1.5 rounded-full">
-            Become a Verified Marketplace Seller
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6">
+          <span className="inline-block bg-amber-500 text-slate-950 font-bold text-xs px-4 py-1.5 rounded-full">
+            Start Selling on RealBell BizMart
           </span>
           <h2 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-white leading-tight">
-            Are You an Indian Wholesaler, Brand, or Distributor? <br className="hidden sm:block" />
-            Join 50,000+ Verified Sellers on RealBell BizMart
+            Are You a Shopkeeper, Brand, or Merchant? <br className="hidden sm:block" />
+            Grow Your Business Across India Today
           </h2>
           <p className="text-slate-300 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed">
-            Get high-volume corporate RFQs, access domestic bulk contracts, and export to 150+ international buyer markets with zero buyer default risk.
+            List your products, access hundreds of thousands of active buyers, and receive guaranteed payouts with complete seller protection.
           </p>
-          <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-            <motion.button
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={() => navigate('/signup')}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-7 sm:px-8 py-3.5 rounded-xl shadow-lg transition cursor-pointer text-xs sm:text-sm"
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link
+              to="/signup?role=seller"
+              className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold px-8 py-3.5 rounded-xl shadow-lg transition text-xs sm:text-sm inline-flex items-center justify-center gap-2 cursor-pointer"
             >
-              Register as a Seller Free
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.04, y: -2 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={() => handleOpenRFQ({ title: 'Enterprise Procurement Contract' })}
-              className="bg-white/10 hover:bg-white/20 text-white font-bold px-7 sm:px-8 py-3.5 rounded-xl border border-white/20 transition text-xs sm:text-sm cursor-pointer"
+              <Store className="w-4 h-4" />
+              <span>Register as a Seller Free</span>
+            </Link>
+
+            <button
+              onClick={() => {
+                const el = document.getElementById('product-catalog');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-3.5 rounded-xl border border-white/20 transition text-xs sm:text-sm cursor-pointer"
             >
-              Contact Enterprise Sales
-            </motion.button>
+              Explore Products
+            </button>
           </div>
         </div>
       </section>
 
-      {/* 12. Floating Sourcing Assistant (Matching user screenshot) */}
-      <SourcingAssistant onOpenRFQ={handleOpenRFQ} />
+      {/* 10. Floating Customer Support Assistant */}
+      <SourcingAssistant />
 
-      {/* 13. Interactive RFQ Modal */}
-      <RFQModal
-        isOpen={rfqModalOpen}
-        onClose={() => setRfqModalOpen(false)}
-        initialData={selectedProductForRFQ}
-      />
-
-      {/* 14. Slide-Out Wholesale Cart Drawer */}
+      {/* 11. Slide-Out Shopping Cart Drawer */}
       <CartModal />
 
-      {/* 15. Footer */}
-      <Footer onOpenRFQ={handleOpenRFQ} />
+      {/* 12. Footer */}
+      <Footer />
 
     </div>
   );

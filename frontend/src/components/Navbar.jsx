@@ -22,7 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../zustand/store';
 
-const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onToggleDarkMode }) => {
+const Navbar = ({ selectedCategory, onSelectCategory, darkMode, onToggleDarkMode }) => {
   const navigate = useNavigate();
   const user = useStore((state) => state.user);
   const cart = useStore((state) => state.cart);
@@ -54,19 +54,19 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
   };
 
   return (
-    <header className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 shadow-xs transition-colors duration-200">
+    <header id="app-navbar" className="w-full bg-theme-card border-b border-theme-border sticky top-0 z-50 shadow-xs transition-colors duration-200">
       {/* Top Global Utility Bar */}
-      <div className="bg-slate-950 text-slate-300 text-xs py-1.5 px-3 sm:px-6 border-b border-slate-800/80">
+      <div className="bg-[#172033] dark:bg-[#110B07] text-slate-300 dark:text-[#9CA3AF] text-xs py-1.5 px-3 sm:px-6 border-b border-slate-800/80 dark:border-[#3A2A1F]">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
           
           <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
-            <span className="inline-flex items-center gap-1.5 text-amber-400 font-semibold text-[11px] sm:text-xs truncate">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
-              <span className="truncate">India's Premier Online B2B Wholesale Marketplace</span>
+            <span className="inline-flex items-center gap-1.5 text-[#F59E0B] font-semibold text-[11px] sm:text-xs truncate">
+              <span className="w-2 h-2 rounded-full bg-[#F59E0B] animate-pulse shrink-0"></span>
+              <span className="truncate">India's Premier Online Marketplace Platform</span>
             </span>
-            <span className="hidden lg:inline text-slate-600">|</span>
-            <span className="hidden lg:inline-flex items-center gap-1 text-slate-400 text-xs">
-              <PhoneCall className="w-3 h-3 text-amber-400" />
+            <span className="hidden lg:inline text-slate-600 dark:text-[#3A2A1F]">|</span>
+            <span className="hidden lg:inline-flex items-center gap-1 text-slate-400 dark:text-[#9CA3AF] text-xs">
+              <PhoneCall className="w-3 h-3 text-[#F59E0B]" />
               1800-890-REAL (7325)
             </span>
           </div>
@@ -76,12 +76,12 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onToggleDarkMode}
-              className="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition cursor-pointer px-2 py-0.5 rounded-md hover:bg-slate-800"
+              className="flex items-center gap-1 text-slate-300 dark:text-[#9CA3AF] hover:text-[#F59E0B] transition cursor-pointer px-2 py-0.5 rounded-md hover:bg-slate-800 dark:hover:bg-[#2A1E15]"
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {darkMode ? (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-amber-400 animate-spin-slow" />
+                  <Sun className="w-3.5 h-3.5 text-[#F59E0B] animate-spin-slow" />
                   <span className="hidden xs:inline">Light</span>
                 </>
               ) : (
@@ -92,22 +92,12 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
               )}
             </motion.button>
 
-            <span className="text-slate-700">|</span>
-
-            <button 
-              onClick={() => onOpenRFQ && onOpenRFQ({ title: 'Custom Bulk Order' })}
-              className="text-amber-400 font-bold hover:text-amber-300 flex items-center gap-1 transition"
-            >
-              <Sparkles className="w-3 h-3" />
-              <span className="hidden xs:inline">Post Buying RFQ</span>
-              <span className="xs:hidden">RFQ</span>
-            </button>
-            <span className="text-slate-700">|</span>
-            <Link to={user?.role === 'seller' ? "/seller/dashboard" : "/signup?role=seller"} className="hidden sm:flex items-center gap-1 hover:text-white transition">
-              <Building2 className="w-3 h-3 text-amber-400" /> Become a Seller
+            <span className="text-slate-700 dark:text-[#3A2A1F]">|</span>
+            <Link to={user?.role === 'seller' ? "/seller/dashboard" : "/signup?role=seller"} className="hidden sm:flex items-center gap-1 hover:text-[#F59E0B] transition">
+              <Building2 className="w-3 h-3 text-[#F59E0B]" /> Become a Seller
             </Link>
-            <span className="hidden sm:inline text-slate-700">|</span>
-            <div className="flex items-center gap-1 text-slate-400">
+            <span className="hidden sm:inline text-slate-700 dark:text-[#3A2A1F]">|</span>
+            <div className="flex items-center gap-1 text-slate-400 dark:text-[#9CA3AF]">
               <Globe className="w-3 h-3" />
               <span>INR (₹)</span>
             </div>
@@ -131,14 +121,14 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
             />
             <div className="flex flex-col">
               <div className="flex items-center gap-1">
-                <span className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition">
+                <span className="text-lg sm:text-2xl font-bold tracking-tight text-theme-main group-hover:text-[#F59E0B] transition">
                   RealBell
                 </span>
-                <span className="text-lg sm:text-2xl font-bold tracking-tight text-amber-500">
+                <span className="text-lg sm:text-2xl font-bold tracking-tight text-[#F59E0B]">
                   BizMart
                 </span>
               </div>
-              <span className="text-[9px] sm:text-[10px] uppercase font-semibold tracking-wider text-slate-500 dark:text-slate-400 -mt-1 hidden xs:block">
+              <span className="text-[9px] sm:text-[10px] uppercase font-semibold tracking-wider text-theme-muted -mt-1 hidden xs:block">
                 Online B2B Marketplace
               </span>
             </div>
@@ -146,19 +136,19 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
 
           {/* Desktop Search Bar with Scope Dropdown */}
           <div className="hidden lg:flex flex-1 max-w-2xl mx-4">
-            <form onSubmit={handleSearchSubmit} className="flex w-full rounded-xl border-2 border-amber-500 overflow-hidden shadow-xs hover:shadow-md transition">
+            <form onSubmit={handleSearchSubmit} className="flex w-full rounded-xl border-2 border-[#F59E0B] overflow-hidden shadow-xs hover:shadow-md transition">
               {/* Scope Dropdown */}
-              <div className="relative bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700">
+              <div className="relative bg-theme-page border-r border-theme-border">
                 <button
                   type="button"
                   onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                  className="h-full px-3.5 text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 transition focus:outline-hidden whitespace-nowrap cursor-pointer"
+                  className="h-full px-3.5 text-xs font-semibold text-theme-main flex items-center gap-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition focus:outline-hidden whitespace-nowrap cursor-pointer"
                 >
                   <span>{searchScope}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                  <ChevronDown className="w-3.5 h-3.5 text-theme-muted" />
                 </button>
                 {categoryDropdownOpen && (
-                  <div className="absolute left-0 top-full mt-1 w-44 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 z-50 text-xs">
+                  <div className="absolute left-0 top-full mt-1 w-44 bg-theme-card border border-theme-border rounded-lg shadow-xl py-1 z-50 text-xs">
                     {['Products', 'Suppliers', 'Wholesalers', 'Bulk Deals'].map((scope) => (
                       <button
                         key={scope}
@@ -167,7 +157,7 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                           setSearchScope(scope);
                           setCategoryDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-amber-400 transition ${searchScope === scope ? 'font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-slate-800' : 'text-slate-700 dark:text-slate-200'}`}
+                        className={`w-full text-left px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#F59E0B] transition ${searchScope === scope ? 'font-bold text-[#F59E0B] bg-[#F59E0B]/10' : 'text-theme-main'}`}
                       >
                         {scope}
                       </button>
@@ -177,13 +167,13 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
               </div>
 
               {/* Input */}
-              <div className="relative flex-1 bg-white dark:bg-slate-800 flex items-center">
+              <div className="relative flex-1 bg-theme-card flex items-center">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search products, manufacturers, uniforms, custom apparel..."
-                  className="w-full px-4 py-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden font-medium"
+                  className="w-full px-4 py-2.5 text-xs sm:text-sm text-theme-main placeholder:text-theme-muted focus:outline-hidden font-medium bg-transparent"
                 />
               </div>
 
@@ -192,7 +182,7 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-6 flex items-center gap-2 transition cursor-pointer"
+                className="bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold px-6 flex items-center gap-2 transition cursor-pointer"
               >
                 <Search className="w-4 h-4 text-slate-950 stroke-[2.5]" />
                 <span className="text-xs sm:text-sm font-semibold">Search</span>
@@ -206,39 +196,28 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onToggleDarkMode}
-              className="p-2 sm:p-2.5 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer"
+              className="p-2 sm:p-2.5 text-theme-muted hover:text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 rounded-xl transition cursor-pointer"
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {darkMode ? (
-                <Sun className="w-5 h-5 text-amber-400" />
+                <Sun className="w-5 h-5 text-[#F59E0B]" />
               ) : (
-                <Moon className="w-5 h-5 text-slate-700" />
+                <Moon className="w-5 h-5 text-theme-muted" />
               )}
             </motion.button>
 
-            {/* Post RFQ Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onOpenRFQ && onOpenRFQ({ title: 'Direct Wholesale Quotation' })}
-              className="hidden sm:inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-orange-500/25 transition cursor-pointer"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Post RFQ</span>
-            </motion.button>
-
-            {/* Wholesale Cart (Only visible when user is logged in) */}
+            {/* Shopping Cart (Only visible when user is logged in) */}
             {user && (
               <motion.button 
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 sm:p-2.5 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer"
-                title="Wholesale Cart & Checkout"
+                className="relative p-2 sm:p-2.5 text-theme-muted hover:text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 rounded-xl transition cursor-pointer"
+                title="Shopping Cart & Checkout"
               >
                 <ShoppingCart className="w-5 h-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-amber-500 text-slate-950 font-bold text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
+                  <span className="absolute -top-1 -right-1 bg-[#F59E0B] text-slate-950 font-bold text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-theme-card">
                     {cartCount}
                   </span>
                 )}
@@ -253,13 +232,13 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                   else if (user.role === 'seller') navigate('/seller/dashboard');
                   else navigate('/user/dashboard');
                 }}
-                className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-slate-200 dark:border-slate-700 cursor-pointer"
+                className="flex items-center gap-2 bg-theme-page hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 text-theme-main px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-theme-border cursor-pointer"
               >
-                <div className="w-6 h-6 rounded-full bg-amber-500 text-slate-900 flex items-center justify-center font-bold text-xs">
+                <div className="w-6 h-6 rounded-full bg-[#F59E0B] text-slate-950 flex items-center justify-center font-bold text-xs">
                   {user.name ? user.name[0].toUpperCase() : 'U'}
                 </div>
                 <span className="hidden md:inline max-w-[80px] truncate">{user.name || 'Account'}</span>
-                <span className="hidden lg:inline text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">
+                <span className="hidden lg:inline text-[10px] uppercase font-bold text-[#D97706] dark:text-[#F59E0B] bg-[#F59E0B]/10 px-1.5 py-0.5 rounded">
                   {user.role || 'Buyer'}
                 </span>
               </button>
@@ -267,7 +246,7 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => navigate('/login')}
-                  className="text-slate-800 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 font-bold text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                  className="text-theme-main hover:text-[#F59E0B] font-bold text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded-lg hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 transition cursor-pointer"
                 >
                   Sign In
                 </button>
@@ -275,7 +254,7 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => navigate('/signup')}
-                  className="hidden md:inline-flex bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-950 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition cursor-pointer"
+                  className="hidden md:inline-flex bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl transition cursor-pointer"
                 >
                   Register
                 </motion.button>
@@ -286,7 +265,7 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+              className="lg:hidden p-2 text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 rounded-xl transition"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -296,15 +275,15 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
 
         {/* Mobile Search Bar */}
         <div className="lg:hidden mt-2 pt-1">
-          <form onSubmit={handleSearchSubmit} className="flex rounded-xl border-2 border-amber-500 overflow-hidden shadow-2xs">
+          <form onSubmit={handleSearchSubmit} className="flex rounded-xl border-2 border-[#F59E0B] overflow-hidden shadow-2xs">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search products, manufacturers..."
-              className="w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden"
+              className="w-full px-3 py-2 text-xs text-theme-main bg-theme-card placeholder:text-theme-muted focus:outline-hidden"
             />
-            <button type="submit" className="bg-amber-500 px-4 flex items-center justify-center text-slate-950 font-bold">
+            <button type="submit" className="bg-[#F59E0B] px-4 flex items-center justify-center text-slate-950 font-bold">
               <Search className="w-4 h-4" />
             </button>
           </form>
@@ -312,9 +291,9 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
       </div>
 
       {/* Category Sub-Navigation Strip (Desktop & Tablet) */}
-      <nav className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 hidden md:block transition-colors">
+      <nav className="bg-theme-page border-t border-theme-border hidden md:block transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between overflow-x-auto no-scrollbar py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 gap-1">
+          <div className="flex items-center justify-between overflow-x-auto no-scrollbar py-2 text-xs font-semibold text-theme-main gap-1">
             <div className="flex items-center gap-1 shrink-0">
               <motion.button 
                 whileHover={{ scale: 1.03 }}
@@ -322,8 +301,8 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                 onClick={() => onSelectCategory && onSelectCategory('all')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition whitespace-nowrap cursor-pointer ${
                   selectedCategory === 'all' || !selectedCategory 
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' 
-                    : 'hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    ? 'bg-[#F59E0B] text-slate-950 font-bold shadow-xs' 
+                    : 'hover:bg-black/5 dark:hover:bg-white/5 text-theme-main'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -331,7 +310,7 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
               </motion.button>
             </div>
 
-            <div className="h-4 w-px bg-slate-300 dark:bg-slate-800 mx-1 shrink-0"></div>
+            <div className="h-4 w-px bg-theme-border mx-1 shrink-0"></div>
 
             <div className="flex items-center gap-1 shrink-0 overflow-x-auto no-scrollbar">
               {categories.slice(1).map((cat) => (
@@ -342,8 +321,8 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                   onClick={() => onSelectCategory && onSelectCategory(cat.id)}
                   className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap cursor-pointer ${
                     selectedCategory === cat.id 
-                      ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' 
-                      : 'hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      ? 'bg-[#F59E0B] text-slate-950 font-bold shadow-xs' 
+                      : 'hover:bg-black/5 dark:hover:bg-white/5 text-theme-main'
                   }`}
                 >
                   {cat.name}
@@ -351,11 +330,11 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
               ))}
             </div>
 
-            <div className="h-4 w-px bg-slate-300 dark:bg-slate-800 mx-1 shrink-0"></div>
+            <div className="h-4 w-px bg-theme-border mx-1 shrink-0"></div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 font-bold text-[11px]">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold text-[11px]">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                 100% Verified Sellers
               </span>
             </div>
@@ -371,21 +350,21 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
-            className="lg:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-4 space-y-4 shadow-xl overflow-hidden"
+            className="lg:hidden bg-theme-card border-b border-theme-border px-4 py-4 space-y-4 shadow-xl overflow-hidden"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-              <span className="font-bold text-xs uppercase tracking-wider text-slate-400">Appearance</span>
+            <div className="flex items-center justify-between border-b border-theme-border pb-3">
+              <span className="font-bold text-xs uppercase tracking-wider text-theme-muted">Appearance</span>
               <button
                 onClick={onToggleDarkMode}
-                className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-amber-400 rounded-xl"
+                className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 bg-theme-page text-theme-main rounded-xl border border-theme-border"
               >
-                {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
+                {darkMode ? <Sun className="w-4 h-4 text-[#F59E0B]" /> : <Moon className="w-4 h-4 text-theme-muted" />}
                 <span>{darkMode ? "Light Theme" : "Dark Theme"}</span>
               </button>
             </div>
 
             <div>
-              <div className="font-bold text-[11px] uppercase tracking-wider text-slate-400 mb-2">
+              <div className="font-bold text-[11px] uppercase tracking-wider text-theme-muted mb-2">
                 Browse Categories
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -398,8 +377,8 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                     }}
                     className={`text-left px-3 py-2 text-xs rounded-xl transition ${
                       selectedCategory === cat.id 
-                        ? 'bg-amber-500 text-slate-950 font-bold' 
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        ? 'bg-[#F59E0B] text-slate-950 font-bold' 
+                        : 'bg-theme-page text-theme-muted hover:text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5'
                     }`}
                   >
                     {cat.name}
@@ -408,28 +387,16 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => {
-                  if (onOpenRFQ) onOpenRFQ({ title: 'Bulk Order Quotation' });
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md"
-              >
-                <FileText className="w-4 h-4" />
-                Post RFQ (Request for Quote)
-              </motion.button>
-
+            <div className="pt-3 border-t border-theme-border space-y-2">
               {user ? (
                 <div className="space-y-2 pt-1">
                   <button
                     onClick={() => { setIsCartOpen(true); setMobileMenuOpen(false); }}
-                    className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl"
+                    className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-xl cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <ShoppingCart className="w-4 h-4" />
-                      <span>Wholesale Cart</span>
+                      <span>My Shopping Cart</span>
                     </span>
                     <span className="bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-bold">
                       {cartCount} items
@@ -443,7 +410,7 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                       else if (user.role === 'seller') navigate('/seller/dashboard');
                       else navigate('/user/dashboard');
                     }}
-                    className="w-full py-2.5 text-center text-xs font-bold bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 rounded-xl"
+                    className="w-full py-2.5 text-center text-xs font-bold bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-xl transition"
                   >
                     Go to {user.role === 'seller' ? 'Seller Hub' : user.role === 'admin' || user.role === 'super_admin' ? 'Admin Panel' : 'Buyer Dashboard'}
                   </button>
@@ -452,21 +419,21 @@ const Navbar = ({ onOpenRFQ, selectedCategory, onSelectCategory, darkMode, onTog
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
-                    className="py-2.5 text-center text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                    className="py-2.5 text-center text-xs font-bold border border-theme-border text-theme-main rounded-xl hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 transition"
                   >
                     Sign In
                   </button>
                   <button
                     onClick={() => { navigate('/signup'); setMobileMenuOpen(false); }}
-                    className="py-2.5 text-center text-xs font-bold bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 rounded-xl hover:bg-slate-800 dark:hover:bg-amber-400 transition"
+                    className="py-2.5 text-center text-xs font-bold bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-xl transition"
                   >
                     Register Free
                   </button>
                 </div>
               )}
 
-              <div className="pt-2 text-center text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5">
-                <PhoneCall className="w-3 h-3 text-amber-500" />
+              <div className="pt-2 text-center text-[11px] text-theme-muted flex items-center justify-center gap-1.5">
+                <PhoneCall className="w-3 h-3 text-[#F59E0B]" />
                 <span>Procurement Helpline: <strong>1800-890-REAL</strong></span>
               </div>
             </div>
