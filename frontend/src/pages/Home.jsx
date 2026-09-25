@@ -375,7 +375,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-poppins text-slate-800 dark:text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950 overflow-x-hidden transition-colors duration-200">
+    <div className="min-h-screen bg-theme-page font-poppins text-theme-main antialiased selection:bg-amber-500 selection:text-slate-950 overflow-x-hidden transition-colors duration-200">
       
       {/* 1. Header / Navbar with Dark Mode Toggle */}
       <Navbar 
@@ -512,7 +512,7 @@ const Home = () => {
       </section>
 
       {/* 3. Value Props Strip */}
-      <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 transition-colors">
+      <section className="bg-theme-card border-b border-theme-border py-6 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="flex items-center gap-3">
@@ -520,8 +520,8 @@ const Home = () => {
                 <Truck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Pan-India Express Delivery</h4>
-                <p className="text-[11px] text-slate-500">Fast doorstep shipping</p>
+                <h4 className="font-bold text-xs sm:text-sm text-theme-main">Pan-India Express Delivery</h4>
+                <p className="text-[11px] text-theme-muted">Fast doorstep shipping</p>
               </div>
             </div>
 
@@ -530,8 +530,8 @@ const Home = () => {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Razorpay Secure Escrow</h4>
-                <p className="text-[11px] text-slate-500">100% payment safety</p>
+                <h4 className="font-bold text-xs sm:text-sm text-theme-main">Razorpay Secure Escrow</h4>
+                <p className="text-[11px] text-theme-muted">100% payment safety</p>
               </div>
             </div>
 
@@ -540,8 +540,8 @@ const Home = () => {
                 <RotateCcw className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">7-Day Easy Returns</h4>
-                <p className="text-[11px] text-slate-500">Hassle-free replacement</p>
+                <h4 className="font-bold text-xs sm:text-sm text-theme-main">7-Day Easy Returns</h4>
+                <p className="text-[11px] text-theme-muted">Hassle-free replacement</p>
               </div>
             </div>
 
@@ -550,8 +550,8 @@ const Home = () => {
                 <Headphones className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">24/7 Customer Care</h4>
-                <p className="text-[11px] text-slate-500">Dedicated assistance</p>
+                <h4 className="font-bold text-xs sm:text-sm text-theme-main">24/7 Customer Care</h4>
+                <p className="text-[11px] text-theme-muted">Dedicated assistance</p>
               </div>
             </div>
           </div>
@@ -559,10 +559,10 @@ const Home = () => {
       </section>
 
       {/* 4. Enterprise Brands Trust Bar */}
-      <section className="py-10 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 transition-colors">
+      <section className="py-10 bg-theme-page border-b border-theme-border transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-6">
-            <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
+            <span className="text-xs uppercase tracking-wider text-theme-muted font-semibold">
               Trusted by 10,000+ Leading Indian Brands & Merchants
             </span>
           </div>
@@ -579,12 +579,12 @@ const Home = () => {
                 key={idx}
                 variants={fadeInUp}
                 whileHover={{ y: -3, scale: 1.03 }}
-                className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-center shadow-2xs hover:border-amber-400 transition"
+                className="bg-theme-card p-3 rounded-xl border border-theme-border text-center shadow-2xs hover:border-amber-400 transition"
               >
-                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block">
+                <span className="text-xs sm:text-sm font-bold text-theme-main truncate block">
                   {brand.name}
                 </span>
-                <span className="text-[10px] text-slate-400 flex items-center justify-center gap-1 mt-0.5">
+                <span className="text-[10px] text-theme-muted flex items-center justify-center gap-1 mt-0.5">
                   <CheckCircle className="w-2.5 h-2.5 text-emerald-500 shrink-0" />
                   <span className="truncate">{brand.role}</span>
                 </span>
@@ -605,18 +605,18 @@ const Home = () => {
       </section>
 
       {/* 5. Direct Sourcing Hubs */}
-      <section className="py-12 sm:py-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
+      <section className="py-12 sm:py-16 bg-theme-card border-b border-theme-border transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
               <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                 Direct Merchant Hubs
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1">
+              <h2 className="text-2xl sm:text-3xl font-bold text-theme-main mt-1">
                 Explore Products by Regional Manufacturing Centers
               </h2>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
+            <p className="text-xs text-theme-muted max-w-md">
               Tap directly into India's most celebrated industrial clusters and artisan hubs. Click any region to filter products.
             </p>
           </div>
@@ -632,14 +632,14 @@ const Home = () => {
                   const el = document.getElementById('product-catalog');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className={`bg-slate-50 dark:bg-slate-850 rounded-2xl p-4 border transition cursor-pointer text-center group ${
-                  activeCategory === hub.category ? 'border-amber-500 shadow-md' : 'border-slate-200 dark:border-slate-800 hover:border-amber-400'
+                className={`bg-theme-page rounded-2xl p-4 border transition cursor-pointer text-center group ${
+                  activeCategory === hub.category ? 'border-amber-500 shadow-md' : 'border-theme-border hover:border-amber-400'
                 }`}
               >
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{hub.icon}</div>
-                <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">{hub.city}</h4>
+                <h4 className="font-bold text-xs sm:text-sm text-theme-main">{hub.city}</h4>
                 <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1 truncate">{hub.label}</p>
-                <span className="inline-block mt-2 text-[10px] bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-2 py-0.5 rounded-full">
+                <span className="inline-block mt-2 text-[10px] bg-theme-card-subtle text-theme-muted font-medium px-2 py-0.5 rounded-full">
                   {hub.sellers}
                 </span>
               </motion.div>
@@ -649,7 +649,7 @@ const Home = () => {
       </section>
 
       {/* 6. Marketplace Product Catalog */}
-      <section id="product-catalog" className="py-14 sm:py-20 bg-slate-50 dark:bg-slate-950 transition-colors">
+      <section id="product-catalog" className="py-14 sm:py-20 bg-theme-page transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
           
           {/* Section Header */}
@@ -657,25 +657,25 @@ const Home = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3.5 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
               Trending Marketplace Catalog
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 dark:text-white mt-2">
+            <h2 className="text-2xl sm:text-4xl font-bold text-theme-main mt-2">
               Featured Products & Top Deals
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-2">
+            <p className="text-theme-muted text-xs sm:text-sm mt-2">
               Quality verified products delivered directly from Indian sellers with 100% payment escrow.
             </p>
           </div>
 
           {/* Filter Bar & Search */}
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="bg-theme-card p-4 rounded-3xl border border-theme-border shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Search Input */}
             <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-theme-muted" />
               <input 
                 type="text" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search products by keyword..."
-                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                className="w-full pl-10 pr-4 py-2 text-xs bg-theme-input border border-theme-border rounded-xl text-theme-main placeholder:text-theme-muted focus:outline-hidden focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
@@ -696,7 +696,7 @@ const Home = () => {
                   className={`px-3.5 py-1.5 rounded-xl font-semibold whitespace-nowrap transition cursor-pointer ${
                     activeCategory === cat.id
                       ? 'bg-amber-500 text-slate-950 shadow-xs'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      : 'bg-theme-card-subtle text-theme-muted hover:bg-theme-card border border-theme-border'
                   }`}
                 >
                   {cat.label}
@@ -711,11 +711,11 @@ const Home = () => {
               <motion.div
                 key={prod.id}
                 whileHover={{ y: -6 }}
-                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-500/70 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                className="bg-theme-card rounded-3xl border border-theme-border hover:border-amber-400 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
               >
                 <div>
                   {/* Image Container with Badge */}
-                  <div className="relative aspect-4/3 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div className="relative aspect-4/3 bg-theme-page overflow-hidden">
                     <img
                       src={prod.image}
                       alt={prod.title}
@@ -734,10 +734,10 @@ const Home = () => {
 
                   {/* Body Content */}
                   <div className="p-4 space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-theme-muted">
                       {prod.categoryLabel}
                     </span>
-                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug" title={prod.title}>
+                    <h3 className="font-bold text-xs sm:text-sm text-theme-main line-clamp-2 leading-snug" title={prod.title}>
                       {prod.title}
                     </h3>
 
@@ -747,15 +747,15 @@ const Home = () => {
                         <Star className="w-3 h-3 fill-emerald-600 dark:fill-emerald-400 text-emerald-600 dark:text-emerald-400" />
                         <span>{prod.rating}</span>
                       </span>
-                      <span className="text-[11px] text-slate-400">({prod.reviews} ratings)</span>
+                      <span className="text-[11px] text-theme-muted">({prod.reviews} ratings)</span>
                     </div>
 
                     {/* Price Block */}
                     <div className="pt-1 flex items-baseline gap-2">
-                      <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                      <span className="text-base sm:text-lg font-bold text-theme-main">
                         ₹{prod.price.toLocaleString('en-IN')}
                       </span>
-                      <span className="text-xs text-slate-400 line-through">
+                      <span className="text-xs text-theme-muted line-through">
                         ₹{prod.mrp.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -771,7 +771,7 @@ const Home = () => {
                   <motion.button
                     whileTap={{ scale: 0.96 }}
                     onClick={() => handleAddToCart(prod)}
-                    className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200 dark:border-slate-700"
+                    className="w-full bg-theme-card-subtle hover:bg-theme-card text-theme-main font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-theme-border"
                     title="Add to Shopping Cart"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
@@ -793,10 +793,10 @@ const Home = () => {
           </div>
 
           {filteredProducts.length === 0 && (
-            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 p-8">
-              <PackageCheck className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <h4 className="font-bold text-slate-800 dark:text-white">No products match your search</h4>
-              <p className="text-xs text-slate-500 mt-1">Try clearing keywords or switching categories.</p>
+            <div className="text-center py-16 bg-theme-card rounded-3xl border border-dashed border-theme-border p-8">
+              <PackageCheck className="w-12 h-12 text-theme-muted mx-auto mb-3" />
+              <h4 className="font-bold text-theme-main">No products match your search</h4>
+              <p className="text-xs text-theme-muted mt-1">Try clearing keywords or switching categories.</p>
               <button
                 onClick={() => { setActiveCategory('all'); setSearchTerm(''); }}
                 className="mt-4 bg-amber-500 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl cursor-pointer"
@@ -871,17 +871,17 @@ const Home = () => {
       </section>
 
       {/* 8. Frequently Asked Questions (FAQ) - Interactive Accordion */}
-      <section id="faq" className="py-14 sm:py-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors">
+      <section id="faq" className="py-14 sm:py-20 bg-theme-card border-b border-theme-border transition-colors">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
           
           <div className="text-center space-y-2">
             <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 px-3.5 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
               Got Questions?
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-slate-900 dark:text-white">
+            <h2 className="text-2xl sm:text-4xl font-bold text-theme-main">
               Frequently Asked Questions (FAQs)
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+            <p className="text-xs sm:text-sm text-theme-muted max-w-xl mx-auto">
               Everything you need to know about shopping, payment security, order tracking, and selling on RealBell BizMart.
             </p>
           </div>
@@ -890,16 +890,16 @@ const Home = () => {
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition shadow-2xs"
+                className="border border-theme-border rounded-2xl overflow-hidden transition shadow-2xs"
               >
                 <button
                   type="button"
                   onClick={() => setActiveFaq(activeFaq === index ? null : index)}
-                  className="w-full text-left px-5 py-4 bg-slate-50/50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs sm:text-sm text-slate-900 dark:text-white flex justify-between items-center transition cursor-pointer"
+                  className="w-full text-left px-5 py-4 bg-theme-page hover:bg-theme-card-subtle font-bold text-xs sm:text-sm text-theme-main flex justify-between items-center transition cursor-pointer"
                 >
                   <span className="pr-4">{faq.q}</span>
                   <ChevronRight
-                    className={`w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200 ${
+                    className={`w-4 h-4 text-theme-muted shrink-0 transition-transform duration-200 ${
                       activeFaq === index ? 'rotate-90 text-amber-600 dark:text-amber-400' : ''
                     }`}
                   />
@@ -911,7 +911,7 @@ const Home = () => {
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="px-5 py-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 leading-relaxed border-t border-slate-100 dark:border-slate-800 font-normal overflow-hidden"
+                      className="px-5 py-4 text-xs sm:text-sm text-theme-muted bg-theme-card leading-relaxed border-t border-theme-border font-normal overflow-hidden"
                     >
                       {faq.a}
                     </motion.div>
@@ -921,10 +921,10 @@ const Home = () => {
             ))}
           </div>
 
-          <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div className="p-6 rounded-3xl bg-theme-page border border-theme-border flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
             <div>
-              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Still have questions?</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Our customer support team is available 24/7 to help.</p>
+              <h4 className="font-bold text-sm text-theme-main">Still have questions?</h4>
+              <p className="text-xs text-theme-muted">Our customer support team is available 24/7 to help.</p>
             </div>
             <a
               href="tel:18008907325"

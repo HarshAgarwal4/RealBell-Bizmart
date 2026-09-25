@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../zustand/store';
 import { useNavigate } from 'react-router-dom';
 import { initiateRazorpayCheckout } from '../services/razorpay';
@@ -33,11 +33,24 @@ export const CartModal = () => {
   const [shippingAddress, setShippingAddress] = useState({
     fullName: user?.name || '',
     phone: user?.phone || '',
-    addressLine: '',
-    city: '',
-    state: '',
-    pincode: ''
+    addressLine: user?.address?.addressLine || '',
+    city: user?.address?.city || '',
+    state: user?.address?.state || '',
+    pincode: user?.address?.pincode || ''
   });
+
+  useEffect(() => {
+    if (user) {
+      setShippingAddress(prev => ({
+        fullName: prev.fullName || user.name || '',
+        phone: prev.phone || user.phone || '',
+        addressLine: prev.addressLine || user.address?.addressLine || '',
+        city: prev.city || user.address?.city || '',
+        state: prev.state || user.address?.state || '',
+        pincode: prev.pincode || user.address?.pincode || ''
+      }));
+    }
+  }, [user]);
 
   const subtotal = cart.reduce((acc, item) => acc + (Number(item.price) * Number(item.quantity)), 0);
   const shippingFee = 0; // Free enterprise delivery

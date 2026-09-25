@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
   Search, 
   ShoppingCart, 
@@ -7,6 +7,7 @@ import {
   FileText, 
   ShieldCheck, 
   ChevronDown, 
+  ChevronRight,
   Menu, 
   X, 
   PhoneCall, 
@@ -17,21 +18,45 @@ import {
   Layers,
   HelpCircle,
   Sun,
-  Moon
+  Moon,
+  LayoutDashboard,
+  Home,
+  ShoppingBag,
+  Store,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../zustand/store';
 
 const Navbar = ({ selectedCategory, onSelectCategory, darkMode, onToggleDarkMode }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useStore((state) => state.user);
   const cart = useStore((state) => state.cart);
   const setIsCartOpen = useStore((state) => state.setIsCartOpen);
+  const logoutUser = useStore((state) => state.logoutUser);
   const cartCount = (cart || []).reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchScope, setSearchScope] = useState('Products');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const userDropdownRef = useRef(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   const categories = [
     { id: 'all', name: 'All Categories' },
@@ -224,24 +249,209 @@ const Navbar = ({ selectedCategory, onSelectCategory, darkMode, onToggleDarkMode
               </motion.button>
             )}
 
-            {/* User Account / Auth */}
+            {/* User Account / Auth Dropdown */}
             {user ? (
-              <button
-                onClick={() => {
-                  if (user.role === 'admin' || user.role === 'super_admin') navigate('/admin');
-                  else if (user.role === 'seller') navigate('/seller/dashboard');
-                  else navigate('/user/dashboard');
-                }}
-                className="flex items-center gap-2 bg-theme-page hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 text-theme-main px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition border border-theme-border cursor-pointer"
-              >
-                <div className="w-6 h-6 rounded-full bg-[#F59E0B] text-slate-950 flex items-center justify-center font-bold text-xs">
-                  {user.name ? user.name[0].toUpperCase() : 'U'}
-                </div>
-                <span className="hidden md:inline max-w-[80px] truncate">{user.name || 'Account'}</span>
-                <span className="hidden lg:inline text-[10px] uppercase font-bold text-[#D97706] dark:text-[#F59E0B] bg-[#F59E0B]/10 px-1.5 py-0.5 rounded">
-                  {user.role || 'Buyer'}
-                </span>
-              </button>
+              <div className="relative" ref={userDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className={`flex items-center gap-2 bg-theme-page hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 text-theme-main px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition border cursor-pointer ${
+                    userDropdownOpen ? 'border-[#F59E0B] ring-2 ring-[#F59E0B]/20' : 'border-theme-border'
+                  }`}
+                  aria-expanded={userDropdownOpen}
+                >
+                  {user.profile && user.profile !== '/defaultProfile.png' ? (
+                    <img 
+                      src={user.profile} 
+                      alt={user.name || 'User'} 
+                      className="w-6 h-6 rounded-full object-cover border border-[#F59E0B]" 
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-[#F59E0B] text-slate-950 flex items-center justify-center font-bold text-xs">
+                      {user.name ? user.name[0].toUpperCase() : 'U'}
+                    </div>
+                  )}
+                  <span className="hidden md:inline max-w-[90px] truncate">{user.name || 'Account'}</span>
+                  {['admin', 'super_admin'].includes(user.role) && (
+                    <span className="hidden lg:inline text-[10px] uppercase font-bold text-[#D97706] dark:text-[#F59E0B] bg-[#F59E0B]/10 px-1.5 py-0.5 rounded">
+                      Admin
+                    </span>
+                  )}
+                  <ChevronDown className={`w-3.5 h-3.5 text-theme-muted transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu: 4 Options (Home/Dashboard, Orders, Profile, Logout) */}
+                <AnimatePresence>
+                  {userDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-56 bg-theme-card border border-theme-border rounded-2xl shadow-xl p-1.5 z-50 overflow-hidden font-poppins"
+                    >
+                      {/* User Brief Summary */}
+                      <div className="px-3 py-2 bg-theme-page/60 rounded-xl mb-1 border border-theme-border/60">
+                        <p className="text-xs font-bold text-theme-main truncate">
+                          {user.name || 'Account Holder'}
+                        </p>
+                        <p className="text-[11px] text-theme-muted truncate mt-0.5">
+                          {user.email || ''}
+                        </p>
+                      </div>
+
+                      {/* 1. Panel / Home / Shop Option */}
+                      {location.pathname === '/' ? (
+                        (user?.role === 'admin' || user?.role === 'super_admin') ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserDropdownOpen(false);
+                              navigate('/admin');
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <ShieldCheck className="w-4 h-4 text-[#F59E0B]" />
+                              <span>Admin Panel</span>
+                            </div>
+                            <span className="text-[10px] text-theme-muted font-normal">Administration</span>
+                          </button>
+                        ) : user?.role === 'seller' ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserDropdownOpen(false);
+                              navigate('/seller/dashboard');
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Store className="w-4 h-4 text-[#F59E0B]" />
+                              <span>Merchant Panel</span>
+                            </div>
+                            <span className="text-[10px] text-theme-muted font-normal">Vendor Hub</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserDropdownOpen(false);
+                              navigate('/user/dashboard');
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <ShoppingBag className="w-4 h-4 text-[#F59E0B]" />
+                              <span>Shop</span>
+                            </div>
+                            <span className="text-[10px] text-theme-muted font-normal">Dashboard</span>
+                          </button>
+                        )
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserDropdownOpen(false);
+                              navigate('/');
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Home className="w-4 h-4 text-[#F59E0B]" />
+                              <span>Home</span>
+                            </div>
+                            <span className="text-[10px] text-theme-muted font-normal">Marketplace</span>
+                          </button>
+
+                          {(user?.role === 'admin' || user?.role === 'super_admin') && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUserDropdownOpen(false);
+                                navigate('/admin');
+                              }}
+                              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <ShieldCheck className="w-4 h-4 text-[#F59E0B]" />
+                                <span>Admin Panel</span>
+                              </div>
+                              <span className="text-[10px] text-theme-muted font-normal">Administration</span>
+                            </button>
+                          )}
+
+                          {user?.role === 'seller' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUserDropdownOpen(false);
+                                navigate('/seller/dashboard');
+                              }}
+                              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <Store className="w-4 h-4 text-[#F59E0B]" />
+                                <span>Merchant Panel</span>
+                              </div>
+                              <span className="text-[10px] text-theme-muted font-normal">Vendor Hub</span>
+                            </button>
+                          )}
+                        </>
+                      )}
+
+                      {/* 2. Orders */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          navigate('/user/orders');
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Package className="w-4 h-4 text-[#F59E0B]" />
+                          <span>Orders</span>
+                        </div>
+                        <span className="text-[10px] text-theme-muted font-normal">My Purchases</span>
+                      </button>
+
+                      {/* 3. Profile */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          navigate('/user/profile');
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <User className="w-4 h-4 text-[#F59E0B]" />
+                          <span>Profile</span>
+                        </div>
+                        <span className="text-[10px] text-theme-muted font-normal">Manage</span>
+                      </button>
+
+                      <div className="my-1 border-t border-theme-border/70" />
+
+                      {/* 4. Logout */}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setUserDropdownOpen(false);
+                          await logoutUser();
+                          navigate('/login');
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
@@ -403,16 +613,154 @@ const Navbar = ({ selectedCategory, onSelectCategory, darkMode, onToggleDarkMode
                     </span>
                   </button>
 
+                  {/* 1. Panel / Home / Shop Option */}
+                  {location.pathname === '/' ? (
+                    (user.role === 'admin' || user.role === 'super_admin') ? (
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigate('/admin');
+                        }}
+                        className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-xl transition cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>Admin Panel</span>
+                        </span>
+                        <span className="text-[10px] font-normal opacity-85">
+                          Go to Admin Portal
+                        </span>
+                      </button>
+                    ) : user.role === 'seller' ? (
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigate('/seller/dashboard');
+                        }}
+                        className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-xl transition cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Store className="w-4 h-4" />
+                          <span>Merchant Panel</span>
+                        </span>
+                        <span className="text-[10px] font-normal opacity-85">
+                          Go to Merchant Hub
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigate('/user/dashboard');
+                        }}
+                        className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-xl transition cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2">
+                          <ShoppingBag className="w-4 h-4" />
+                          <span>Shop</span>
+                        </span>
+                        <span className="text-[10px] font-normal opacity-85">
+                          Go to Dashboard
+                        </span>
+                      </button>
+                    )
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigate('/');
+                        }}
+                        className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-xl transition cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Home className="w-4 h-4" />
+                          <span>Home</span>
+                        </span>
+                        <span className="text-[10px] font-normal opacity-85">
+                          Go to Marketplace
+                        </span>
+                      </button>
+
+                      {(user.role === 'admin' || user.role === 'super_admin') && (
+                        <button
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate('/admin');
+                          }}
+                          className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl transition cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4" />
+                            <span>Admin Panel</span>
+                          </span>
+                          <span className="text-[10px] font-normal opacity-85">
+                            Portal
+                          </span>
+                        </button>
+                      )}
+
+                      {user.role === 'seller' && (
+                        <button
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            navigate('/seller/dashboard');
+                          }}
+                          className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-bold border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl transition cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <Store className="w-4 h-4" />
+                            <span>Merchant Panel</span>
+                          </span>
+                          <span className="text-[10px] font-normal opacity-85">
+                            Hub
+                          </span>
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                  {/* 2. Orders */}
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      if (user.role === 'admin' || user.role === 'super_admin') navigate('/admin');
-                      else if (user.role === 'seller') navigate('/seller/dashboard');
-                      else navigate('/user/dashboard');
+                      navigate('/user/orders');
                     }}
-                    className="w-full py-2.5 text-center text-xs font-bold bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 rounded-xl transition"
+                    className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-semibold border border-theme-border text-theme-main rounded-xl hover:bg-[#F59E0B]/10 transition cursor-pointer"
                   >
-                    Go to {user.role === 'seller' ? 'Seller Hub' : user.role === 'admin' || user.role === 'super_admin' ? 'Admin Panel' : 'Buyer Dashboard'}
+                    <span className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-[#F59E0B]" />
+                      <span>Orders</span>
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-theme-muted" />
+                  </button>
+
+                  {/* 3. Profile */}
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate('/user/profile');
+                    }}
+                    className="w-full py-2.5 px-3 flex items-center justify-between text-xs font-semibold border border-theme-border text-theme-main rounded-xl hover:bg-[#F59E0B]/10 transition cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-[#F59E0B]" />
+                      <span>Profile</span>
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-theme-muted" />
+                  </button>
+
+                  {/* 4. Logout */}
+                  <button
+                    onClick={async () => {
+                      setMobileMenuOpen(false);
+                      await logoutUser();
+                      navigate('/login');
+                    }}
+                    className="w-full py-2 px-3 flex items-center justify-center gap-2 text-xs font-semibold text-rose-500 hover:bg-rose-500/10 rounded-xl transition cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
                   </button>
                 </div>
               ) : (

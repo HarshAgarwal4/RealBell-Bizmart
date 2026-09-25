@@ -30,6 +30,29 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "/defaultProfile.png"
     },
+    companyName: {
+        type: String,
+        default: ""
+    },
+    gstin: {
+        type: String,
+        default: ""
+    },
+    businessType: {
+        type: String,
+        default: "Individual"
+    },
+    address: {
+        addressLine: { type: String, default: "" },
+        city: { type: String, default: "" },
+        state: { type: String, default: "" },
+        pincode: { type: String, default: "" },
+        country: { type: String, default: "India" }
+    },
+    profileCompleted: {
+        type: Boolean,
+        default: false
+    },
     // Seller Approval Workflow fields
     sellerStatus: {
         type: String,

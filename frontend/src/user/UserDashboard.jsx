@@ -1202,25 +1202,37 @@ export const UserDashboard = () => {
         </div>
 
         {/* Profile Header */}
-        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-theme-card border border-theme-border mb-5 shadow-xs">
+        <Link 
+          to="/user/profile"
+          className="flex items-center gap-3 p-3.5 rounded-2xl bg-theme-card border border-theme-border mb-5 shadow-xs hover:border-[#F59E0B] transition group"
+        >
           <div className="relative shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-[#F59E0B] text-slate-950 font-black text-sm flex items-center justify-center shadow-xs">
-              {user?.name ? user.name[0].toUpperCase() : 'H'}
-            </div>
+            {user?.profile && user.profile !== '/defaultProfile.png' ? (
+              <img 
+                src={user.profile} 
+                alt={user?.name || 'User'} 
+                className="w-10 h-10 rounded-xl object-cover border border-[#F59E0B]/30"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-[#F59E0B] text-slate-950 font-black text-sm flex items-center justify-center shadow-xs">
+                {user?.name ? user.name[0].toUpperCase() : 'U'}
+              </div>
+            )}
             <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-theme-sidebar"></span>
           </div>
           <div className="overflow-hidden flex-1 min-w-0">
-            <h3 className="font-bold text-xs text-theme-main truncate">
-              {user?.name || 'Harsh Agarwal'}
+            <h3 className="font-bold text-xs text-theme-main truncate group-hover:text-[#F59E0B] transition">
+              {user?.name || 'My Account'}
             </h3>
             <p className="text-[11px] text-theme-muted truncate">
-              {user?.email || 'agarwalh270@gmail.com'}
+              {user?.email || ''}
             </p>
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-              <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Buyer Account
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 mt-0.5">
+              <User className="w-3 h-3 text-[#F59E0B]" />
+              <span>{user?.profileCompleted ? 'Manage Profile' : 'Complete Profile'}</span>
             </span>
           </div>
-        </div>
+        </Link>
 
         {/* Navigation Tabs */}
         <div className="space-y-1 mb-5">
@@ -1277,6 +1289,24 @@ export const UserDashboard = () => {
               </span>
             )}
           </button>
+
+          {/* 3. My Profile Tab */}
+          <Link
+            to="/user/profile"
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 transition cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <User className="w-4 h-4 text-[#F59E0B]" />
+              <span>My Profile</span>
+            </div>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
+              user?.profileCompleted 
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                : 'bg-amber-500/15 text-[#F59E0B]'
+            }`}>
+              {user?.profileCompleted ? '100%' : 'Complete'}
+            </span>
+          </Link>
 
           {/* 3. My Cart Trigger */}
           <button

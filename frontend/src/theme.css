@@ -1,0 +1,161 @@
+/* ==========================================================================
+   REALBELL BIZMART - GLOBAL THEME CONFIGURATION (theme.css)
+   ==========================================================================
+   Edit the color values in this single file to update the theme of the
+   COMPLETE application (page backgrounds, product cards, sidebars, borders,
+   inputs, text, and accents).
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------------
+     LIGHT MODE: Warm Cream / Parchment Palette
+     ------------------------------------------------------------------------ */
+  /* Main Page Background (Used for body and page containers) */
+  --bg-page: #FBF8F3;
+
+  /* Product Cards, Content Cards, Modals, Sections */
+  --bg-card: #FAF6EF;
+
+  /* Subtle Card Background, Image Backdrops, Badges, Pill Buttons */
+  --bg-card-subtle: #EDE8DE;
+
+  /* Sidebar Navigation & Secondary Panels */
+  --bg-sidebar: #F5F1E9;
+
+  /* Form Inputs, Search Fields */
+  --bg-input: #F0ECE3;
+
+  /* Borders, Dividers, Outlines */
+  --border-theme: #E8E0D0;
+  --border-theme-subtle: #F0ECE3;
+
+  /* Main Headings & Body Text */
+  --text-main: #172033;
+
+  /* Muted Text, Captions, Labels */
+  --text-muted: #667085;
+
+  /* Primary Brand Highlight (Amber / Orange) */
+  --primary-orange: #F59E0B;
+  --primary-hover: #D97706;
+
+  /* Accent Highlight */
+  --accent-orange: #EA580C;
+}
+
+/* --------------------------------------------------------------------------
+   DARK MODE: Rich Warm Chocolate / Charcoal Espresso Palette
+   -------------------------------------------------------------------------- */
+.dark {
+  /* Main Page Background in Dark Mode */
+  --bg-page: #160D06;
+
+  /* Product Cards, Content Cards, Modals in Dark Mode */
+  --bg-card: #1E1208;
+
+  /* Subtle Card Background, Image Backdrops in Dark Mode */
+  --bg-card-subtle: #2A1A0D;
+
+  /* Sidebar Navigation in Dark Mode */
+  --bg-sidebar: #1A1008;
+
+  /* Form Inputs in Dark Mode */
+  --bg-input: #130B05;
+
+  /* Borders in Dark Mode */
+  --border-theme: #2E1F10;
+  --border-theme-subtle: #24180C;
+
+  /* Main Headings & Body Text in Dark Mode */
+  --text-main: #EAD9C4;
+
+  /* Muted Text in Dark Mode */
+  --text-muted: #9C7A5A;
+
+  /* Primary Brand Highlight in Dark Mode */
+  --primary-orange: #F59E0B;
+  --primary-hover: #D97706;
+
+  /* Accent Highlight in Dark Mode */
+  --accent-orange: #EA580C;
+}
+
+/* --------------------------------------------------------------------------
+   TAILWIND V4 THEME MAPPINGS
+   -------------------------------------------------------------------------- */
+@theme {
+  --color-theme-page: var(--bg-page);
+  --color-theme-card: var(--bg-card);
+  --color-theme-card-subtle: var(--bg-card-subtle);
+  --color-theme-sidebar: var(--bg-sidebar);
+  --color-theme-input: var(--bg-input);
+  --color-theme-border: var(--border-theme);
+  --color-theme-main: var(--text-main);
+  --color-theme-muted: var(--text-muted);
+  --color-theme-primary: var(--primary-orange);
+  --color-theme-accent: var(--accent-orange);
+}
+
+/* --------------------------------------------------------------------------
+   UNIVERSAL THEME UTILITY CLASSES
+   -------------------------------------------------------------------------- */
+.bg-theme-page {
+  background-color: var(--bg-page);
+}
+
+.bg-theme-card {
+  background-color: var(--bg-card);
+}
+
+.bg-theme-card-subtle {
+  background-color: var(--bg-card-subtle);
+}
+
+.bg-theme-sidebar {
+  background-color: var(--bg-sidebar);
+}
+
+.bg-theme-input {
+  background-color: var(--bg-input);
+}
+
+.border-theme,
+.border-theme-border {
+  border-color: var(--border-theme);
+}
+
+.border-theme-subtle {
+  border-color: var(--border-theme-subtle);
+}
+
+.text-theme-main {
+  color: var(--text-main);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+.text-theme-primary {
+  color: var(--primary-orange);
+}
+
+.text-theme-accent {
+  color: var(--accent-orange);
+}
+
+.bg-theme-primary {
+  background-color: var(--primary-orange);
+}
+
+.bg-theme-accent {
+  background-color: var(--accent-orange);
+}
+
+/* Overlay hover helpers */
+.hover-bg-warm:hover {
+  background-color: rgba(245, 158, 11, 0.08);
+}
+.dark .hover-bg-warm:hover {
+  background-color: rgba(234, 217, 196, 0.06);
+}

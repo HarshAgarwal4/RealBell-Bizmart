@@ -92,6 +92,24 @@ export const useStore = create((set, get) => ({
         }
     },
 
+    updateUserProfile: async (profileData) => {
+        try {
+            let res = await axios.post('/profile', profileData);
+            if (res.data && res.data.status === 1) {
+                set({ user: res.data.user });
+                toast.success(res.data.msg || "Profile updated successfully!");
+                return { success: true, user: res.data.user };
+            } else {
+                toast.error(res.data?.msg || "Failed to update profile");
+                return { success: false, msg: res.data?.msg };
+            }
+        } catch (err) {
+            console.error("updateUserProfile error:", err);
+            toast.error("Network error while updating profile");
+            return { success: false, msg: err.message };
+        }
+    },
+
     logoutUser: async () => {
         try {
             await axios.post('/logout');

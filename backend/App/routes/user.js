@@ -6,6 +6,8 @@ import {
     resetPassword,
     sendOTPToEmail,
     signUp,
+    updateProfile,
+    changePassword,
     applySeller,
     adminGetSellers,
     adminApproveSeller,
@@ -24,6 +26,11 @@ userRoutes.post('/reset-password', resetPassword);
 userRoutes.post('/forget-password', resetPassword);
 userRoutes.post('/me', fetchUser);
 userRoutes.post('/logout', logout);
+
+// User profile management
+userRoutes.post('/profile', updateProfile);
+userRoutes.put('/profile', updateProfile);
+userRoutes.post('/change-password', changePassword);
 
 // Seller application
 userRoutes.post('/seller/apply', applySeller);

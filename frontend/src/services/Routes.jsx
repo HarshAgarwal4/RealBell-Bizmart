@@ -9,6 +9,7 @@ import { ProtectedRoute, RoleRedirect } from './Auth.jsx';
 import { UserDashboard } from '../user/UserDashboard.jsx';
 import { UserOrders } from '../user/UserOrders.jsx';
 import { OrderTracking } from '../user/OrderTracking.jsx';
+import { UserProfile } from '../user/UserProfile.jsx';
 
 // Seller Components
 import { SellerDashboard } from '../seller/SellerDashboard.jsx';
@@ -69,6 +70,22 @@ const Routes = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OrderTracking />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/user/profile',
+    element: (
+      <ProtectedRoute>
+        <UserProfile />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/profile',
+    element: (
+      <ProtectedRoute>
+        <UserProfile />
       </ProtectedRoute>
     )
   },

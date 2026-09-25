@@ -283,8 +283,8 @@ async function adminGetSellers(req, res) {
 // Admin: Approve Seller
 async function adminApproveSeller(req, res) {
     try {
-        const { userId } = req.body;
-        if (!userId) return res.send({ status: 7, msg: "User ID is required" });
+        const userId = req.body.userId || req.body.sellerId;
+        if (!userId) return res.send({ status: 7, msg: "User ID / Seller ID is required" });
         const seller = await UserModel.findById(userId);
         if (!seller) return res.send({ status: 9, msg: "Seller user not found" });
 
@@ -305,14 +305,15 @@ async function adminApproveSeller(req, res) {
 // Admin: Reject Seller
 async function adminRejectSeller(req, res) {
     try {
-        const { userId, reason } = req.body;
-        if (!userId) return res.send({ status: 7, msg: "User ID is required" });
+        const userId = req.body.userId || req.body.sellerId;
+        const reason = req.body.reason || req.body.rejectionReason || "Application did not meet marketplace compliance standards.";
+        if (!userId) return res.send({ status: 7, msg: "User ID / Seller ID is required" });
         const seller = await UserModel.findById(userId);
         if (!seller) return res.send({ status: 9, msg: "Seller user not found" });
 
         seller.sellerStatus = 'rejected';
         if (!seller.sellerDetails) seller.sellerDetails = {};
-        seller.sellerDetails.rejectionReason = reason || "Application did not meet marketplace compliance standards.";
+        seller.sellerDetails.rejectionReason = reason;
         await seller.save();
 
         return res.send({ status: 1, msg: `Seller ${seller.name} application has been rejected.`, seller });
@@ -356,6 +357,117 @@ async function adminUpdateRole(req, res) {
     }
 }
 
+// User: Update Profile
+async function updateProfile(req, res) {
+    try {
+        if (!req.user) {
+            return res.status(401).send({ status: 0, msg: "Please sign in to update your profile." });
+        }
+
+        const {
+            name,
+            phone,
+            profile,
+            companyName,
+            gstin,
+            businessType,
+            address
+        } = req.body;
+
+        if (name && String(name).trim().length >= 2) {
+            req.user.name = String(name).trim();
+        }
+
+        if (phone !== undefined) {
+            req.user.phone = String(phone).trim();
+        }
+
+        if (profile !== undefined) {
+            req.user.profile = String(profile).trim();
+        }
+
+        if (companyName !== undefined) {
+            req.user.companyName = String(companyName).trim();
+        }
+
+        if (gstin !== undefined) {
+            req.user.gstin = String(gstin).trim().toUpperCase();
+        }
+
+        if (businessType !== undefined) {
+            req.user.businessType = String(businessType).trim();
+        }
+
+        if (address) {
+            if (!req.user.address) req.user.address = {};
+            if (address.addressLine !== undefined) req.user.address.addressLine = String(address.addressLine).trim();
+            if (address.city !== undefined) req.user.address.city = String(address.city).trim();
+            if (address.state !== undefined) req.user.address.state = String(address.state).trim();
+            if (address.pincode !== undefined) req.user.address.pincode = String(address.pincode).trim();
+            if (address.country !== undefined) req.user.address.country = String(address.country).trim() || "India";
+        }
+
+        // Determine if profile is completed (has phone and delivery address)
+        const hasName = Boolean(req.user.name);
+        const hasPhone = Boolean(req.user.phone && req.user.phone.length >= 10);
+        const hasAddress = Boolean(
+            req.user.address &&
+            req.user.address.addressLine &&
+            req.user.address.city &&
+            req.user.address.state &&
+            req.user.address.pincode
+        );
+
+        req.user.profileCompleted = hasName && hasPhone && hasAddress;
+
+        await req.user.save();
+
+        return res.send({
+            status: 1,
+            msg: "Profile details updated successfully!",
+            user: req.user
+        });
+    } catch (err) {
+        console.error("Update profile error:", err);
+        return res.send({ status: 0, msg: "Failed to update profile. Please try again." });
+    }
+}
+
+// User: Change Password
+async function changePassword(req, res) {
+    try {
+        if (!req.user) {
+            return res.status(401).send({ status: 0, msg: "Please sign in to change password." });
+        }
+
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.send({ status: 7, msg: "Both current password and new password are required." });
+        }
+
+        if (String(newPassword).length < 6) {
+            return res.send({ status: 7, msg: "New password must be at least 6 characters long." });
+        }
+
+        const isMatch = await verifyPassword(currentPassword, req.user.password);
+        if (!isMatch) {
+            return res.send({ status: 10, msg: "Current password does not match. Please verify and try again." });
+        }
+
+        req.user.password = newPassword;
+        await req.user.save();
+
+        return res.send({
+            status: 1,
+            msg: "Password updated successfully!"
+        });
+    } catch (err) {
+        console.error("Change password error:", err);
+        return res.send({ status: 0, msg: "Failed to change password. Please try again." });
+    }
+}
+
 export {
     signUp,
     login,
@@ -363,6 +475,8 @@ export {
     resetPassword,
     fetchUser,
     logout,
+    updateProfile,
+    changePassword,
     applySeller,
     adminGetSellers,
     adminApproveSeller,
