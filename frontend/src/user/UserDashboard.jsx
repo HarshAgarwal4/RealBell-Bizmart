@@ -7,6 +7,8 @@ import Footer from '../components/Footer';
 import { CartModal } from './CartModal';
 import { ProductDetailModal } from './ProductDetailModal';
 import { toast } from 'react-toastify';
+import { ProductCardSkeleton, OrderCardSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 import { 
   ShoppingBag, 
   Package, 
@@ -407,7 +409,7 @@ export const UserDashboard = () => {
 
   // Products State
   const [products, setProducts] = useState(staticProducts);
-  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -449,6 +451,7 @@ export const UserDashboard = () => {
   const fetchOrders = async () => {
     try {
       setOrdersLoading(true);
+      await withSkeletonDelay();
       const res = await axios.get('/user/orders');
       if (res.status === 200 && res.data.status === 1) {
         setOrders(res.data.orders || []);
@@ -463,6 +466,7 @@ export const UserDashboard = () => {
   const fetchBackendProducts = async () => {
     try {
       setProductsLoading(true);
+      await withSkeletonDelay();
       const res = await axios.get('/products');
       if (res.status === 200 && res.data.status === 1 && Array.isArray(res.data.products)) {
         if (res.data.products.length > 0) {
@@ -791,7 +795,15 @@ export const UserDashboard = () => {
                 </div>
 
                 {/* Product Cards Layout */}
-                {filteredProducts.length === 0 ? (
+                {productsLoading ? (
+                  <div className={
+                    viewMode === 'grid'
+                      ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4"
+                      : "space-y-3"
+                  }>
+                    <ProductCardSkeleton count={8} viewMode={viewMode} />
+                  </div>
+                ) : filteredProducts.length === 0 ? (
                   <div className="bg-theme-card border border-theme-border rounded-2xl p-12 text-center space-y-3 shadow-xs">
                     <div className="w-12 h-12 rounded-full bg-theme-page text-theme-muted flex items-center justify-center mx-auto">
                       <Search className="w-6 h-6" />
@@ -1104,10 +1116,7 @@ export const UserDashboard = () => {
                   </div>
 
                   {ordersLoading ? (
-                    <div className="text-center py-10">
-                      <div className="w-7 h-7 border-3 border-[#F59E0B] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                      <p className="text-xs text-theme-muted">Loading purchase records...</p>
-                    </div>
+                    <OrderCardSkeleton count={3} />
                   ) : orders.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-theme-border rounded-xl p-6 space-y-3">
                       <Package className="w-10 h-10 text-theme-muted mx-auto" />

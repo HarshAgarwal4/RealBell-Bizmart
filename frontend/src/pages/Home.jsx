@@ -6,6 +6,8 @@ import SourcingAssistant from '../components/SourcingAssistant';
 import { CartModal } from '../user/CartModal';
 import { useStore } from '../zustand/store';
 import { toast } from 'react-toastify';
+import { ProductCardSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 import { 
   Building2, 
   ShieldCheck, 
@@ -99,6 +101,13 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllBrands, setShowAllBrands] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+
+  useEffect(() => {
+    withSkeletonDelay().then(() => {
+      setCatalogLoading(false);
+    });
+  }, []);
 
   // Direct Marketplace Add To Cart Handler
   const handleAddToCart = (prod) => {
@@ -707,89 +716,93 @@ const Home = () => {
 
           {/* Product Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {filteredProducts.map((prod) => (
-              <motion.div
-                key={prod.id}
-                whileHover={{ y: -6 }}
-                className="bg-theme-card rounded-3xl border border-theme-border hover:border-amber-400 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  {/* Image Container with Badge */}
-                  <div className="relative aspect-4/3 bg-theme-page overflow-hidden">
-                    <img
-                      src={prod.image}
-                      alt={prod.title}
-                      className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    {prod.badge && (
-                      <span className="absolute top-3 left-3 bg-amber-500 text-slate-950 text-[10px] font-bold px-2.5 py-0.5 rounded-md shadow-xs">
-                        {prod.badge}
-                      </span>
-                    )}
-                    <span className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
-                      {prod.discount}
-                    </span>
-                  </div>
-
-                  {/* Body Content */}
-                  <div className="p-4 space-y-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-theme-muted">
-                      {prod.categoryLabel}
-                    </span>
-                    <h3 className="font-bold text-xs sm:text-sm text-theme-main line-clamp-2 leading-snug" title={prod.title}>
-                      {prod.title}
-                    </h3>
-
-                    {/* Rating & Reviews */}
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold text-[11px]">
-                        <Star className="w-3 h-3 fill-emerald-600 dark:fill-emerald-400 text-emerald-600 dark:text-emerald-400" />
-                        <span>{prod.rating}</span>
-                      </span>
-                      <span className="text-[11px] text-theme-muted">({prod.reviews} ratings)</span>
-                    </div>
-
-                    {/* Price Block */}
-                    <div className="pt-1 flex items-baseline gap-2">
-                      <span className="text-base sm:text-lg font-bold text-theme-main">
-                        ₹{prod.price.toLocaleString('en-IN')}
-                      </span>
-                      <span className="text-xs text-theme-muted line-through">
-                        ₹{prod.mrp.toLocaleString('en-IN')}
+            {catalogLoading ? (
+              <ProductCardSkeleton count={8} viewMode="grid" />
+            ) : (
+              filteredProducts.map((prod) => (
+                <motion.div
+                  key={prod.id}
+                  whileHover={{ y: -6 }}
+                  className="bg-theme-card rounded-3xl border border-theme-border hover:border-amber-400 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Image Container with Badge */}
+                    <div className="relative aspect-4/3 bg-theme-page overflow-hidden">
+                      <img
+                        src={prod.image}
+                        alt={prod.title}
+                        className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      {prod.badge && (
+                        <span className="absolute top-3 left-3 bg-amber-500 text-slate-950 text-[10px] font-bold px-2.5 py-0.5 rounded-md shadow-xs">
+                          {prod.badge}
+                        </span>
+                      )}
+                      <span className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                        {prod.discount}
                       </span>
                     </div>
 
-                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                      {prod.delivery}
-                    </p>
+                    {/* Body Content */}
+                    <div className="p-4 space-y-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-theme-muted">
+                        {prod.categoryLabel}
+                      </span>
+                      <h3 className="font-bold text-xs sm:text-sm text-theme-main line-clamp-2 leading-snug" title={prod.title}>
+                        {prod.title}
+                      </h3>
+
+                      {/* Rating & Reviews */}
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-md font-bold text-[11px]">
+                          <Star className="w-3 h-3 fill-emerald-600 dark:fill-emerald-400 text-emerald-600 dark:text-emerald-400" />
+                          <span>{prod.rating}</span>
+                        </span>
+                        <span className="text-[11px] text-theme-muted">({prod.reviews} ratings)</span>
+                      </div>
+
+                      {/* Price Block */}
+                      <div className="pt-1 flex items-baseline gap-2">
+                        <span className="text-base sm:text-lg font-bold text-theme-main">
+                          ₹{prod.price.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-xs text-theme-muted line-through">
+                          ₹{prod.mrp.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        {prod.delivery}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Direct Action Buttons: Add To Cart & Buy Now */}
-                <div className="p-4 pt-0 grid grid-cols-2 gap-2 mt-auto">
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => handleAddToCart(prod)}
-                    className="w-full bg-theme-card-subtle hover:bg-theme-card text-theme-main font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-theme-border"
-                    title="Add to Shopping Cart"
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>Cart</span>
-                  </motion.button>
+                  {/* Direct Action Buttons: Add To Cart & Buy Now */}
+                  <div className="p-4 pt-0 grid grid-cols-2 gap-2 mt-auto">
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => handleAddToCart(prod)}
+                      className="w-full bg-theme-card-subtle hover:bg-theme-card text-theme-main font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-theme-border"
+                      title="Add to Shopping Cart"
+                    >
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      <span>Cart</span>
+                    </motion.button>
 
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => handleBuyNow(prod)}
-                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-                    title="Order Now with Razorpay"
-                  >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Buy Now</span>
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => handleBuyNow(prod)}
+                      className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold text-xs py-2.5 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      title="Order Now with Razorpay"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Buy Now</span>
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
 
           {filteredProducts.length === 0 && (

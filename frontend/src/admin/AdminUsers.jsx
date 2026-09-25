@@ -18,6 +18,8 @@ import {
   Phone
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { TableRowSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 
 export const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -33,6 +35,7 @@ export const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      await withSkeletonDelay();
       const res = await axios.get('/admin/users');
       if (res.status === 200 && res.data.status === 1) {
         setUsers(res.data.users || []);
@@ -159,9 +162,14 @@ export const AdminUsers = () => {
 
         {/* ===================== USERS TABLE ===================== */}
         {loading ? (
-          <div className="text-center py-20 bg-theme-card rounded-3xl border border-theme-border">
-            <div className="w-10 h-10 border-4 border-[#F59E0B] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-xs text-theme-muted">Loading user accounts...</p>
+          <div className="bg-theme-card rounded-3xl border border-theme-border shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px] text-left text-xs">
+                <tbody className="divide-y divide-theme-border">
+                  <TableRowSkeleton rows={6} cols={6} />
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-theme-card rounded-3xl border border-theme-border p-12 text-center space-y-3">
@@ -174,7 +182,7 @@ export const AdminUsers = () => {
         ) : (
           <div className="bg-theme-card rounded-3xl border border-theme-border shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-theme-main">
+              <table className="w-full min-w-[700px] text-left text-xs text-theme-main">
                 <thead className="bg-theme-card-subtle text-theme-muted uppercase text-[10px] tracking-wider border-b border-theme-border font-bold">
                   <tr>
                     <th className="py-3.5 px-5">Account Identity</th>

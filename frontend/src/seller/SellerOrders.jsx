@@ -15,6 +15,8 @@ import {
   Search
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { OrderCardSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 
 export const SellerOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -29,6 +31,7 @@ export const SellerOrders = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      await withSkeletonDelay();
       const res = await axios.get('/seller/orders');
       if (res.status === 200 && res.data.status === 1) {
         setOrders(res.data.orders || []);
@@ -108,10 +111,7 @@ export const SellerOrders = () => {
 
       {/* Orders List */}
       {loading ? (
-        <div className="text-center py-20">
-          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-xs text-slate-500">Loading incoming orders...</p>
-        </div>
+        <OrderCardSkeleton count={3} />
       ) : filteredOrders.length === 0 ? (
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-3">
           <Package className="w-12 h-12 text-slate-400 mx-auto" />

@@ -5,6 +5,7 @@ import { useStore } from './zustand/store'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import './toast.css'
+import { PwaInstallPrompt } from './components/PwaInstallPrompt'
 
 function App() {
   const fetchUser = useStore((state) => state.fetchUser)
@@ -16,6 +17,7 @@ function App() {
   return (
     <>
       <RouterProvider router={Routes} />
+      <PwaInstallPrompt />
       <ToastContainer
         position="top-right"
         autoClose={3500}

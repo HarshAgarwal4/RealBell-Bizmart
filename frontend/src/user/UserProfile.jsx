@@ -6,6 +6,8 @@ import Footer from '../components/Footer';
 import { CartModal } from './CartModal';
 import axios from '../services/axios';
 import { toast } from 'react-toastify';
+import { ProfileSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 import { 
   User, 
   Mail, 
@@ -61,6 +63,13 @@ export const UserProfile = () => {
 
   const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'address' | 'business' | 'security'
   const [saving, setSaving] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    withSkeletonDelay().then(() => {
+      setProfileLoading(false);
+    });
+  }, []);
 
   // Form States
   const [formData, setFormData] = useState({
@@ -507,11 +516,14 @@ export const UserProfile = () => {
           </div>
 
           {/* Right Column (8 cols): Active Tab Form Content */}
-          <div className="lg:col-span-8 bg-theme-card border border-theme-border rounded-3xl p-6 sm:p-8 shadow-xs">
-            
-            {/* Tab 1: Personal & Contact */}
-            {activeTab === 'personal' && (
-              <form onSubmit={handleSaveProfile} className="space-y-6">
+          <div className="lg:col-span-8">
+            {profileLoading ? (
+              <ProfileSkeleton />
+            ) : (
+              <div className="bg-theme-card border border-theme-border rounded-3xl p-6 sm:p-8 shadow-xs">
+                {/* Tab 1: Personal & Contact */}
+                {activeTab === 'personal' && (
+                  <form onSubmit={handleSaveProfile} className="space-y-6">
                 <div>
                   <h3 className="text-lg font-bold text-theme-main">Personal & Contact Information</h3>
                   <p className="text-xs text-theme-muted mt-1">
@@ -903,6 +915,8 @@ export const UserProfile = () => {
               </form>
             )}
 
+              </div>
+            )}
           </div>
 
         </div>

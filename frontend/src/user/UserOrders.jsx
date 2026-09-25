@@ -15,6 +15,8 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { OrderCardSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 
 export const UserOrders = () => {
   const navigate = useNavigate();
@@ -29,6 +31,7 @@ export const UserOrders = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      await withSkeletonDelay();
       const res = await axios.get('/user/orders');
       if (res.status === 200 && res.data.status === 1) {
         setOrders(res.data.orders || []);
@@ -96,10 +99,7 @@ export const UserOrders = () => {
 
         {/* Orders Content */}
         {loading ? (
-          <div className="text-center py-20">
-            <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-xs text-slate-500">Loading your orders...</p>
-          </div>
+          <OrderCardSkeleton count={3} />
         ) : orders.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-amber-50 dark:bg-slate-800 text-amber-500 flex items-center justify-center mx-auto">
@@ -141,7 +141,7 @@ export const UserOrders = () => {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {getStatusBadge(order.orderStatus)}
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                       {order.paymentStatus === 'paid' ? 'Paid via Razorpay' : 'Payment Pending'}
@@ -151,7 +151,7 @@ export const UserOrders = () => {
 
                 {/* Items & Details */}
                 <div className="p-4 sm:p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div className="space-y-2 flex-1">
+                  <div className="space-y-2 flex-1 w-full">
                     {order.items.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3">
                         <img 
@@ -159,7 +159,7 @@ export const UserOrders = () => {
                           alt={item.title} 
                           className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 bg-white shrink-0"
                         />
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <h4 className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">
                             {item.title}
                           </h4>
@@ -181,7 +181,7 @@ export const UserOrders = () => {
 
                     <button
                       onClick={() => navigate(`/user/track-order/${order._id}`)}
-                      className="bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-950 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                      className="bg-slate-900 dark:bg-amber-500 hover:bg-slate-800 dark:hover:bg-amber-400 text-white dark:text-slate-950 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
                     >
                       <Truck className="w-3.5 h-3.5" />
                       <span>Track Order</span>

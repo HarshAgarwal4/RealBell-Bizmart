@@ -8,6 +8,8 @@ import { SellerProducts } from './SellerProducts';
 import { SellerOrders } from './SellerOrders';
 import { MerchantNavbar } from './MerchantNavbar';
 import { MerchantFooter } from './MerchantFooter';
+import { KPICardSkeleton, TableRowSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 import { 
   Store, 
   Package, 
@@ -75,7 +77,7 @@ export const SellerDashboard = () => {
     pendingShipments: 0
   });
   const [recentOrders, setRecentOrders] = useState([]);
-  const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
 
   // Dynamic Navbar Height Calculation for truly fixed sidebar positioning
   const [navbarHeight, setNavbarHeight] = useState(115);
@@ -92,22 +94,34 @@ export const SellerDashboard = () => {
     return () => window.removeEventListener('resize', updateNavbarHeight);
   }, []);
 
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isApproved = user?.sellerStatus === 'approved';
+
   useEffect(() => {
-    if (user?.sellerStatus === 'approved') {
+    if (isAdmin || isApproved) {
       fetchSellerMetrics();
+    } else {
+      setLoadingMetrics(false);
     }
-  }, [user]);
+  }, [user, isAdmin, isApproved]);
 
   const fetchSellerMetrics = async () => {
     try {
       setLoadingMetrics(true);
+      await withSkeletonDelay();
       const [prodRes, orderRes] = await Promise.all([
-        axios.get('/seller/products'),
-        axios.get('/seller/orders')
+        axios.get('/seller/products').catch(err => {
+          console.warn("Could not fetch seller products:", err.message);
+          return { data: { products: [] } };
+        }),
+        axios.get('/seller/orders').catch(err => {
+          console.warn("Could not fetch seller orders:", err.message);
+          return { data: { orders: [] } };
+        })
       ]);
 
-      const prods = prodRes.data.products || [];
-      const orders = orderRes.data.orders || [];
+      const prods = prodRes?.data?.products || [];
+      const orders = orderRes?.data?.orders || [];
 
       const totalRevenue = orders
         .filter(o => o.paymentStatus === 'paid')
@@ -127,7 +141,7 @@ export const SellerDashboard = () => {
       // Keep recent 5 orders for dashboard overview table
       setRecentOrders(orders.slice(0, 5));
     } catch (err) {
-      console.error(err);
+      console.error("Error in fetchSellerMetrics:", err);
     } finally {
       setLoadingMetrics(false);
     }
@@ -137,8 +151,6 @@ export const SellerDashboard = () => {
     await logoutUser();
     navigate('/login');
   };
-
-  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   // 1. If user has not filled approval form yet
   if (!isAdmin && (!user || user.sellerStatus === 'none' || forceForm)) {
@@ -179,7 +191,7 @@ export const SellerDashboard = () => {
         {mobileSidebarOpen && (
           <div 
             onClick={() => setMobileSidebarOpen(false)}
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 lg:hidden"
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-[998] lg:hidden"
           />
         )}
 
@@ -189,7 +201,7 @@ export const SellerDashboard = () => {
             top: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${navbarHeight}px` : undefined,
             height: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `calc(100vh - ${navbarHeight}px)` : undefined
           }}
-          className={`fixed inset-y-0 left-0 z-40 w-72 bg-theme-sidebar border-r border-theme-border p-4 sm:p-5 overflow-y-auto shadow-xs transition-transform duration-300 lg:top-[115px] lg:bottom-0 lg:z-30 flex flex-col justify-between ${
+          className={`fixed inset-y-0 left-0 z-[999] w-72 bg-theme-sidebar border-r border-theme-border p-4 sm:p-5 overflow-y-auto shadow-xs transition-transform duration-300 lg:top-[115px] lg:bottom-0 lg:z-30 flex flex-col justify-between ${
             mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
@@ -454,49 +466,53 @@ export const SellerDashboard = () => {
 
                 {/* 4 Metric KPI Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  
-                  {/* Metric 1 */}
-                  <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
-                    <div className="flex items-center justify-between text-theme-muted mb-2">
-                      <span className="text-xs font-semibold">Catalog Products</span>
-                      <Package className="w-4 h-4 text-[#F59E0B]" />
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black text-theme-main">{metrics.totalProducts}</div>
-                    <div className="text-[11px] text-theme-muted mt-1">Active wholesale listings</div>
-                  </div>
+                  {loadingMetrics ? (
+                    <KPICardSkeleton count={4} />
+                  ) : (
+                    <>
+                      {/* Metric 1 */}
+                      <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
+                        <div className="flex items-center justify-between text-theme-muted mb-2">
+                          <span className="text-xs font-semibold">Catalog Products</span>
+                          <Package className="w-4 h-4 text-[#F59E0B]" />
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-black text-theme-main">{metrics.totalProducts}</div>
+                        <div className="text-[11px] text-theme-muted mt-1">Active wholesale listings</div>
+                      </div>
 
-                  {/* Metric 2 */}
-                  <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
-                    <div className="flex items-center justify-between text-theme-muted mb-2">
-                      <span className="text-xs font-semibold">Commercial Orders</span>
-                      <ShoppingBag className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">{metrics.totalOrders}</div>
-                    <div className="text-[11px] text-theme-muted mt-1">Direct enterprise bookings</div>
-                  </div>
+                      {/* Metric 2 */}
+                      <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
+                        <div className="flex items-center justify-between text-theme-muted mb-2">
+                          <span className="text-xs font-semibold">Commercial Orders</span>
+                          <ShoppingBag className="w-4 h-4 text-blue-500" />
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">{metrics.totalOrders}</div>
+                        <div className="text-[11px] text-theme-muted mt-1">Direct enterprise bookings</div>
+                      </div>
 
-                  {/* Metric 3 */}
-                  <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
-                    <div className="flex items-center justify-between text-theme-muted mb-2">
-                      <span className="text-xs font-semibold">Pending Shipments</span>
-                      <Truck className="w-4 h-4 text-orange-500" />
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">{metrics.pendingShipments}</div>
-                    <div className="text-[11px] text-theme-muted mt-1">Requires carton dispatch</div>
-                  </div>
+                      {/* Metric 3 */}
+                      <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
+                        <div className="flex items-center justify-between text-theme-muted mb-2">
+                          <span className="text-xs font-semibold">Pending Shipments</span>
+                          <Truck className="w-4 h-4 text-orange-500" />
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400">{metrics.pendingShipments}</div>
+                        <div className="text-[11px] text-theme-muted mt-1">Requires carton dispatch</div>
+                      </div>
 
-                  {/* Metric 4 */}
-                  <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
-                    <div className="flex items-center justify-between text-theme-muted mb-2">
-                      <span className="text-xs font-semibold">Gross Settlements</span>
-                      <TrendingUp className="w-4 h-4 text-emerald-500" />
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
-                      ₹{metrics.totalRevenue.toLocaleString('en-IN')}
-                    </div>
-                    <div className="text-[11px] text-theme-muted mt-1">Settled via Razorpay</div>
-                  </div>
-
+                      {/* Metric 4 */}
+                      <div className="bg-theme-card border border-theme-border rounded-3xl p-5 shadow-xs">
+                        <div className="flex items-center justify-between text-theme-muted mb-2">
+                          <span className="text-xs font-semibold">Gross Settlements</span>
+                          <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                          ₹{metrics.totalRevenue.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[11px] text-theme-muted mt-1">Settled via Razorpay</div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Quick Action Navigation Cards */}
@@ -581,7 +597,7 @@ export const SellerDashboard = () => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                      <table className="w-full min-w-[620px] text-left text-xs">
                         <thead>
                           <tr className="border-b border-theme-border text-theme-muted uppercase tracking-wider text-[10px]">
                             <th className="pb-3">Order Number</th>
@@ -593,7 +609,10 @@ export const SellerDashboard = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-theme-border">
-                          {recentOrders.map(order => (
+                          {loadingMetrics ? (
+                            <TableRowSkeleton rows={4} cols={6} />
+                          ) : (
+                            recentOrders.map(order => (
                             <tr key={order._id} className="hover:bg-theme-subtle/50 transition">
                               <td className="py-3 font-mono font-semibold text-theme-main">
                                 #{order.orderNumber}
@@ -628,7 +647,7 @@ export const SellerDashboard = () => {
                                 </button>
                               </td>
                             </tr>
-                          ))}
+                          )))}
                         </tbody>
                       </table>
                     </div>

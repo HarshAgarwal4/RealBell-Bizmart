@@ -1,0 +1,53 @@
+{
+  "name": "RealBell BizMart - B2B Wholesale Marketplace",
+  "short_name": "RealBell BizMart",
+  "description": "India's Premier B2B Online Wholesale Marketplace connecting businesses directly with verified manufacturers and distributors.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF8F3",
+  "theme_color": "#172033",
+  "categories": [
+    "shopping",
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Marketplace",
+      "url": "/",
+      "description": "Browse live B2B wholesale marketplace"
+    },
+    {
+      "name": "Buyer Dashboard",
+      "url": "/user/dashboard",
+      "description": "View orders and buyer purchases"
+    },
+    {
+      "name": "Merchant Hub",
+      "url": "/seller/dashboard",
+      "description": "Manage wholesale inventory and orders"
+    }
+  ]
+}

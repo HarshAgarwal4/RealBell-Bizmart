@@ -78,7 +78,7 @@ export const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, onBu
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 sm:p-6 overflow-y-auto font-poppins">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto font-poppins">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -327,7 +327,7 @@ export const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, onBu
                 </div>
 
                 {/* Primary Action Buttons */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => {

@@ -29,6 +29,8 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { KPICardSkeleton, OrderCardSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -47,6 +49,7 @@ export const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      await withSkeletonDelay();
       const [sellersRes, prodsRes, ordersRes, usersRes] = await Promise.all([
         axios.get('/admin/sellers'),
         axios.get('/admin/products'),
@@ -140,77 +143,81 @@ export const AdminDashboard = () => {
 
         {/* ===================== 4 CORE KPI METRIC CARDS ===================== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
-          {/* Card 1: Gross Merchandise Volume */}
-          <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
-            <div className="flex items-center justify-between text-theme-muted mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">Total Platform GMV</span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 group-hover:scale-105 transition-transform">
-                <TrendingUp className="w-4 h-4" />
+          {loading ? (
+            <KPICardSkeleton count={4} />
+          ) : (
+            <>
+              {/* Card 1: Gross Merchandise Volume */}
+              <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
+                <div className="flex items-center justify-between text-theme-muted mb-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider">Total Platform GMV</span>
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 group-hover:scale-105 transition-transform">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                  ₹{totalGMV.toLocaleString('en-IN')}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-theme-muted mt-2 pt-2 border-t border-theme-border">
+                  <span>Razorpay Escrow Paid</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">100% Cleared</span>
+                </div>
               </div>
-            </div>
-            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
-              ₹{totalGMV.toLocaleString('en-IN')}
-            </div>
-            <div className="flex items-center justify-between text-[11px] text-theme-muted mt-2 pt-2 border-t border-theme-border">
-              <span>Razorpay Escrow Paid</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">100% Cleared</span>
-            </div>
-          </div>
 
-          {/* Card 2: Verified Sellers */}
-          <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
-            <div className="flex items-center justify-between text-theme-muted mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">Wholesale Merchants</span>
-              <div className="p-2 rounded-xl bg-[#F59E0B]/10 text-amber-600 dark:text-amber-400 border border-[#F59E0B]/20 group-hover:scale-105 transition-transform">
-                <Store className="w-4 h-4" />
+              {/* Card 2: Verified Sellers */}
+              <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
+                <div className="flex items-center justify-between text-theme-muted mb-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider">Wholesale Merchants</span>
+                  <div className="p-2 rounded-xl bg-[#F59E0B]/10 text-amber-600 dark:text-amber-400 border border-[#F59E0B]/20 group-hover:scale-105 transition-transform">
+                    <Store className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-theme-main tracking-tight">
+                  {approvedSellers.length}
+                </div>
+                <div className="flex items-center justify-between text-[11px] mt-2 pt-2 border-t border-theme-border">
+                  <span className="text-theme-muted">Pending Review</span>
+                  <span className={`font-bold ${pendingSellers.length > 0 ? 'text-amber-600 dark:text-amber-400 animate-pulse' : 'text-theme-muted'}`}>
+                    {pendingSellers.length} applicants
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="text-2xl font-black text-theme-main tracking-tight">
-              {approvedSellers.length}
-            </div>
-            <div className="flex items-center justify-between text-[11px] mt-2 pt-2 border-t border-theme-border">
-              <span className="text-theme-muted">Pending Review</span>
-              <span className={`font-bold ${pendingSellers.length > 0 ? 'text-amber-600 dark:text-amber-400 animate-pulse' : 'text-theme-muted'}`}>
-                {pendingSellers.length} applicants
-              </span>
-            </div>
-          </div>
 
-          {/* Card 3: Platform Orders */}
-          <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
-            <div className="flex items-center justify-between text-theme-muted mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">Total B2B Orders</span>
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 group-hover:scale-105 transition-transform">
-                <ShoppingBag className="w-4 h-4" />
+              {/* Card 3: Platform Orders */}
+              <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
+                <div className="flex items-center justify-between text-theme-muted mb-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider">Total B2B Orders</span>
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 group-hover:scale-105 transition-transform">
+                    <ShoppingBag className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-theme-main tracking-tight">
+                  {stats.orders.length}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-theme-muted mt-2 pt-2 border-t border-theme-border">
+                  <span>Active Inflow</span>
+                  <span className="text-purple-600 dark:text-purple-400 font-bold">{pendingShipments} in transit</span>
+                </div>
               </div>
-            </div>
-            <div className="text-2xl font-black text-theme-main tracking-tight">
-              {stats.orders.length}
-            </div>
-            <div className="flex items-center justify-between text-[11px] text-theme-muted mt-2 pt-2 border-t border-theme-border">
-              <span>Active Inflow</span>
-              <span className="text-purple-600 dark:text-purple-400 font-bold">{pendingShipments} in transit</span>
-            </div>
-          </div>
 
-          {/* Card 4: Wholesale Catalog SKUs */}
-          <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
-            <div className="flex items-center justify-between text-theme-muted mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">Wholesale Catalog</span>
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 group-hover:scale-105 transition-transform">
-                <Package className="w-4 h-4" />
+              {/* Card 4: Wholesale Catalog SKUs */}
+              <div className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/40 rounded-3xl p-5 shadow-xs transition-all group">
+                <div className="flex items-center justify-between text-theme-muted mb-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider">Wholesale Catalog</span>
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 group-hover:scale-105 transition-transform">
+                    <Package className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="text-2xl font-black text-theme-main tracking-tight">
+                  {stats.products.length}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-theme-muted mt-2 pt-2 border-t border-theme-border">
+                  <span>Registered Accounts</span>
+                  <span className="text-blue-600 dark:text-blue-400 font-bold">{stats.users.length} users</span>
+                </div>
               </div>
-            </div>
-            <div className="text-2xl font-black text-theme-main tracking-tight">
-              {stats.products.length}
-            </div>
-            <div className="flex items-center justify-between text-[11px] text-theme-muted mt-2 pt-2 border-t border-theme-border">
-              <span>Registered Accounts</span>
-              <span className="text-blue-600 dark:text-blue-400 font-bold">{stats.users.length} users</span>
-            </div>
-          </div>
-
+            </>
+          )}
         </div>
 
         {/* ===================== SYSTEM INFRASTRUCTURE HEALTH STRIP ===================== */}
@@ -264,7 +271,17 @@ export const AdminDashboard = () => {
             </div>
 
             {loading ? (
-              <div className="py-8 text-center text-xs text-theme-muted">Checking pending applicants...</div>
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="p-4 bg-theme-page border border-theme-border rounded-2xl animate-pulse flex items-center justify-between">
+                    <div className="space-y-2 flex-1">
+                      <div className="w-36 h-4 rounded bg-slate-200 dark:bg-white/10" />
+                      <div className="w-48 h-3 rounded bg-slate-200 dark:bg-white/10" />
+                    </div>
+                    <div className="w-20 h-8 rounded-xl bg-slate-200 dark:bg-white/10" />
+                  </div>
+                ))}
+              </div>
             ) : pendingSellers.length === 0 ? (
               <div className="text-center py-10 border border-dashed border-theme-border rounded-2xl p-4 space-y-2">
                 <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
@@ -278,10 +295,10 @@ export const AdminDashboard = () => {
                 {pendingSellers.slice(0, 4).map(seller => (
                   <div
                     key={seller._id}
-                    className="p-4 bg-theme-page border border-theme-border hover:border-[#F59E0B]/40 rounded-2xl flex items-center justify-between gap-3 text-xs transition"
+                    className="p-4 bg-theme-page border border-theme-border hover:border-[#F59E0B]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition"
                   >
                     <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <p className="font-bold text-theme-main truncate text-sm">
                           {seller.sellerDetails?.shopName || 'Registered Wholesale Store'}
                         </p>
@@ -294,7 +311,7 @@ export const AdminDashboard = () => {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                       <button
                         onClick={() => handleQuickApprove(seller._id)}
                         disabled={processingId === seller._id}
@@ -339,7 +356,7 @@ export const AdminDashboard = () => {
             </div>
 
             {loading ? (
-              <div className="py-8 text-center text-xs text-theme-muted">Loading order stream...</div>
+              <OrderCardSkeleton count={2} />
             ) : stats.orders.length === 0 ? (
               <div className="text-center py-10 border border-dashed border-theme-border rounded-2xl p-4 space-y-2">
                 <Clock className="w-8 h-8 text-theme-muted mx-auto" />
@@ -353,10 +370,10 @@ export const AdminDashboard = () => {
                 {stats.orders.slice(0, 4).map(order => (
                   <div
                     key={order._id}
-                    className="p-4 bg-theme-page border border-theme-border hover:border-[#F59E0B]/40 rounded-2xl flex items-center justify-between gap-3 text-xs transition"
+                    className="p-4 bg-theme-page border border-theme-border hover:border-[#F59E0B]/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 text-xs transition"
                   >
                     <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-mono font-bold text-theme-main">#{order.orderNumber}</span>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize font-bold ${
                           order.paymentStatus === 'paid' 
@@ -371,7 +388,7 @@ export const AdminDashboard = () => {
                       </p>
                     </div>
 
-                    <div className="text-right shrink-0">
+                    <div className="text-left sm:text-right shrink-0 flex items-center sm:block justify-between border-t sm:border-t-0 pt-2 sm:pt-0 border-theme-border/60">
                       <span className="font-bold text-[#F59E0B] text-sm block">
                         ₹{Number(order.totalAmount).toLocaleString('en-IN')}
                       </span>

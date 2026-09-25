@@ -20,6 +20,8 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ProductCardSkeleton, TableRowSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 
 export const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -36,6 +38,7 @@ export const AdminProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      await withSkeletonDelay();
       const res = await axios.get('/admin/products');
       if (res.status === 200 && res.data.status === 1) {
         setProducts(res.data.products || []);
@@ -109,16 +112,16 @@ export const AdminProducts = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <div className="hidden sm:flex items-center gap-3 bg-theme-page px-4 py-2 rounded-2xl border border-theme-border text-xs">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex items-center gap-2.5 sm:gap-3 bg-theme-page px-3 sm:px-4 py-1.5 sm:py-2 rounded-2xl border border-theme-border text-xs">
               <div>
                 <span className="text-[10px] text-theme-muted uppercase font-bold block">Aggregated Stock</span>
-                <span className="font-bold text-theme-main font-mono">{totalStockUnits.toLocaleString('en-IN')} units</span>
+                <span className="font-bold text-theme-main font-mono text-xs sm:text-sm">{totalStockUnits.toLocaleString('en-IN')} units</span>
               </div>
               <span className="text-theme-border">|</span>
               <div>
                 <span className="text-[10px] text-theme-muted uppercase font-bold block">Active Suppliers</span>
-                <span className="font-bold text-[#F59E0B] font-mono">{uniqueSellersCount} vendors</span>
+                <span className="font-bold text-[#F59E0B] font-mono text-xs sm:text-sm">{uniqueSellersCount} vendors</span>
               </div>
             </div>
 
@@ -149,7 +152,7 @@ export const AdminProducts = () => {
           </div>
 
           {/* View Toggle (Table vs Grid) */}
-          <div className="flex items-center gap-2 self-end md:self-auto">
+          <div className="flex items-center justify-end gap-2 w-full md:w-auto">
             <div className="bg-theme-card p-1 rounded-xl border border-theme-border flex items-center gap-1">
               <button
                 onClick={() => setViewMode('table')}
@@ -205,10 +208,21 @@ export const AdminProducts = () => {
 
         {/* ===================== CATALOG DISPLAY ===================== */}
         {loading ? (
-          <div className="text-center py-20 bg-theme-card rounded-3xl border border-theme-border">
-            <div className="w-10 h-10 border-4 border-[#F59E0B] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-xs text-theme-muted">Loading platform catalog...</p>
-          </div>
+          viewMode === 'table' ? (
+            <div className="bg-theme-card rounded-3xl border border-theme-border shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[680px] text-left text-xs">
+                  <tbody className="divide-y divide-theme-border">
+                    <TableRowSkeleton rows={6} cols={6} />
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <ProductCardSkeleton count={8} viewMode="grid" />
+            </div>
+          )
         ) : filtered.length === 0 ? (
           <div className="bg-theme-card rounded-3xl border border-theme-border p-12 text-center space-y-3">
             <Package className="w-12 h-12 text-theme-muted/50 mx-auto" />
@@ -221,7 +235,7 @@ export const AdminProducts = () => {
           /* ===================== TABLE VIEW ===================== */
           <div className="bg-theme-card rounded-3xl border border-theme-border shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-theme-main">
+              <table className="w-full min-w-[680px] text-left text-xs text-theme-main">
                 <thead className="bg-theme-card-subtle text-theme-muted uppercase text-[10px] tracking-wider border-b border-theme-border font-bold">
                   <tr>
                     <th className="py-3.5 px-4">Product & Category</th>

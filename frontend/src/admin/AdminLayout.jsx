@@ -287,14 +287,14 @@ export const AdminLayout = ({ children }) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setMobileSidebarOpen(false)}
-                className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-50"
+                className="lg:hidden fixed inset-0 bg-black/70 backdrop-blur-xs z-[998]"
               />
               <motion.aside
                 initial={{ x: '-100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'tween', duration: 0.2 }}
-                className="lg:hidden fixed inset-y-0 left-0 w-72 bg-theme-sidebar border-r border-theme-border z-50 flex flex-col font-poppins"
+                className="lg:hidden fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-theme-sidebar border-r border-theme-border z-[999] flex flex-col font-poppins shadow-2xl"
               >
                 <div className="h-16 px-5 border-b border-theme-border flex items-center justify-between">
                   <div className="flex items-center gap-2">

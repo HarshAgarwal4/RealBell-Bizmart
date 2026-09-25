@@ -24,6 +24,8 @@ import {
   ArrowRight 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DossierCardSkeleton } from '../components/Skeletons';
+import { withSkeletonDelay } from '../utils/skeletonDelay';
 
 export const SellerApprovals = () => {
   const [sellers, setSellers] = useState([]);
@@ -45,6 +47,7 @@ export const SellerApprovals = () => {
   const fetchSellers = async () => {
     try {
       setLoading(true);
+      await withSkeletonDelay();
       const res = await axios.get('/admin/sellers');
       if (res.status === 200 && res.data.status === 1) {
         setSellers(res.data.sellers || []);
@@ -227,10 +230,7 @@ export const SellerApprovals = () => {
 
         {/* ===================== SELLERS APPLICATION CARDS ===================== */}
         {loading ? (
-          <div className="text-center py-20 bg-theme-card rounded-3xl border border-theme-border">
-            <div className="w-10 h-10 border-4 border-[#F59E0B] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-xs text-theme-muted">Loading merchant records...</p>
-          </div>
+          <DossierCardSkeleton count={3} />
         ) : filteredSellers.length === 0 ? (
           <div className="bg-theme-card rounded-3xl border border-theme-border p-12 text-center space-y-3">
             <Store className="w-12 h-12 text-theme-muted/50 mx-auto" />
@@ -370,27 +370,27 @@ export const SellerApprovals = () => {
                     <span>Inspect Full Dossier</span>
                   </button>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
                     {seller.sellerStatus === 'pending' ? (
                       <>
                         <button
                           onClick={() => handleOpenRejectModal(seller)}
                           disabled={processing}
-                          className="px-3.5 py-1.5 rounded-xl border border-rose-500/40 text-rose-500 hover:bg-rose-500/10 font-bold transition cursor-pointer disabled:opacity-50"
+                          className="px-3.5 py-1.5 rounded-xl border border-rose-500/40 text-rose-500 hover:bg-rose-500/10 font-bold transition cursor-pointer disabled:opacity-50 flex-1 sm:flex-initial text-center justify-center"
                         >
                           Decline Application
                         </button>
                         <button
                           onClick={() => handleApprove(seller._id)}
                           disabled={processing}
-                          className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold transition cursor-pointer shadow-2xs disabled:opacity-50 flex items-center gap-1.5"
+                          className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold transition cursor-pointer shadow-2xs disabled:opacity-50 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial text-center"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           <span>Approve Merchant</span>
                         </button>
                       </>
                     ) : seller.sellerStatus === 'approved' ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1">
                           <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
                           <span>Active Supplier in Marketplace</span>
@@ -422,12 +422,12 @@ export const SellerApprovals = () => {
         {/* ===================== INSPECT DOSSIER MODAL ===================== */}
         <AnimatePresence>
           {inspectModalOpen && selectedSeller && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs font-poppins">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs font-poppins overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-theme-card border border-theme-border rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5"
+                className="bg-theme-card border border-theme-border rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 sm:space-y-5 max-h-[90vh] overflow-y-auto my-auto"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-theme-border">
                   <div className="flex items-center gap-2.5">
@@ -441,14 +441,14 @@ export const SellerApprovals = () => {
                   </div>
                   <button
                     onClick={() => setInspectModalOpen(false)}
-                    className="p-1 rounded-lg text-theme-muted hover:text-theme-main"
+                    className="p-1 rounded-lg text-theme-muted hover:text-theme-main cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 <div className="space-y-4 text-xs">
-                  <div className="grid grid-cols-2 gap-3 bg-theme-page p-3.5 rounded-2xl border border-theme-border">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 bg-theme-page p-3.5 rounded-2xl border border-theme-border">
                     <div>
                       <span className="text-[10px] text-theme-muted font-bold block">LEGAL BUSINESS NAME</span>
                       <p className="text-theme-main font-semibold">{selectedSeller.sellerDetails?.shopName || 'N/A'}</p>
@@ -477,10 +477,10 @@ export const SellerApprovals = () => {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 bg-theme-page p-3.5 rounded-2xl border border-theme-border">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 bg-theme-page p-3.5 rounded-2xl border border-theme-border">
                     <div>
                       <span className="text-[10px] text-theme-muted font-bold block">BANK ACCOUNT</span>
-                      <p className="font-mono text-theme-main font-semibold">{selectedSeller.sellerDetails?.bankAccount || 'N/A'}</p>
+                      <p className="font-mono text-theme-main font-semibold break-all">{selectedSeller.sellerDetails?.bankAccount || 'N/A'}</p>
                     </div>
                     <div>
                       <span className="text-[10px] text-theme-muted font-bold block">IFSC CODE</span>
@@ -493,19 +493,19 @@ export const SellerApprovals = () => {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-theme-border flex justify-end gap-2">
+                <div className="pt-3 border-t border-theme-border flex flex-col-reverse sm:flex-row justify-end gap-2">
                   <button
                     onClick={() => {
                       setInspectModalOpen(false);
                       handleOpenRejectModal(selectedSeller);
                     }}
-                    className="px-4 py-2 rounded-xl border border-rose-500/40 text-rose-500 hover:bg-rose-500/10 font-bold text-xs"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl border border-rose-500/40 text-rose-500 hover:bg-rose-500/10 font-bold text-xs cursor-pointer text-center"
                   >
                     Decline
                   </button>
                   <button
                     onClick={() => handleApprove(selectedSeller._id)}
-                    className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shadow-2xs"
+                    className="w-full sm:w-auto px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shadow-2xs cursor-pointer text-center"
                   >
                     Confirm & Approve Merchant
                   </button>
@@ -518,12 +518,12 @@ export const SellerApprovals = () => {
         {/* ===================== REJECTION REASON MODAL ===================== */}
         <AnimatePresence>
           {rejectModalOpen && selectedSeller && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs font-poppins">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs font-poppins overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-theme-card border border-theme-border rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4"
+                className="bg-theme-card border border-theme-border rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto my-auto"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-theme-border">
                   <div className="flex items-center gap-2 text-rose-500">
@@ -532,7 +532,7 @@ export const SellerApprovals = () => {
                   </div>
                   <button
                     onClick={() => setRejectModalOpen(false)}
-                    className="p-1 rounded-lg text-theme-muted hover:text-theme-main"
+                    className="p-1 rounded-lg text-theme-muted hover:text-theme-main cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -578,11 +578,11 @@ export const SellerApprovals = () => {
                   />
                 </div>
 
-                <div className="pt-2 flex justify-end gap-2">
+                <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setRejectModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-theme-muted hover:text-theme-main"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-semibold text-theme-muted hover:text-theme-main cursor-pointer text-center"
                   >
                     Cancel
                   </button>
@@ -590,7 +590,7 @@ export const SellerApprovals = () => {
                     type="button"
                     onClick={handleConfirmReject}
                     disabled={processing}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-2xs disabled:opacity-50"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-2xs disabled:opacity-50 cursor-pointer text-center"
                   >
                     Confirm Rejection
                   </button>
