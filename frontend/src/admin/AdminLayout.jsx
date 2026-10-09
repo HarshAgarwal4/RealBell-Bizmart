@@ -23,7 +23,11 @@ import {
   Sun,
   Moon,
   PhoneCall,
-  Globe
+  Globe,
+  Briefcase,
+  Bell,
+  Megaphone,
+  Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -62,6 +66,9 @@ export const AdminLayout = ({ children }) => {
     { label: 'Wholesale Catalog', path: '/admin/products', icon: Package, badge: null },
     { label: 'Orders & GMV', path: '/admin/orders', icon: ShoppingBag, badge: 'Escrow' },
     { label: 'Access Control', path: '/admin/users', icon: Users, badge: null },
+    { label: 'Team & Access', path: '/admin/team-access', icon: Briefcase, badge: 'Super Admin' },
+    { label: 'Notification Center', path: '/admin/notifications', icon: Bell, badge: 'Broadcast' },
+    { label: 'Mail Center', path: '/admin/mail', icon: Mail, badge: 'Nodemailer' },
   ];
 
   const currentNav = navItems.find(item => item.path === location.pathname) || { label: 'Admin Operations' };

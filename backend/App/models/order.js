@@ -14,7 +14,13 @@ const orderItemSchema = new mongoose.Schema({
         ref: "User"
     },
     sellerName: { type: String, default: "" },
-    image: { type: String, default: "" }
+    image: { type: String, default: "" },
+    purchaseType: {
+        type: String,
+        enum: ['normal', 'wholesale'],
+        default: 'normal'
+    },
+    tierApplied: { type: String, default: "" }
 });
 
 const orderSchema = new mongoose.Schema({
@@ -50,17 +56,26 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'failed'],
+        enum: ['pending', 'paid', 'failed', 'refunded'],
         default: 'pending'
     },
     razorpayOrderId: { type: String, default: "" },
     razorpayPaymentId: { type: String, default: "" },
     razorpaySignature: { type: String, default: "" },
+    paymentFailureDetails: {
+        errorCode: { type: String, default: "" },
+        errorDescription: { type: String, default: "" },
+        errorSource: { type: String, default: "" },
+        errorStep: { type: String, default: "" },
+        errorReason: { type: String, default: "" },
+        failedAt: { type: Date }
+    },
     orderStatus: {
         type: String,
         enum: ['placed', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'],
         default: 'placed'
     },
+    cancellationReason: { type: String, default: "" },
     timeline: [
         {
             status: { type: String, required: true },

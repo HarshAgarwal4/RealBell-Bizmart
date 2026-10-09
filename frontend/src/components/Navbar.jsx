@@ -23,7 +23,8 @@ import {
   Home,
   ShoppingBag,
   Store,
-  LogOut
+  LogOut,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../zustand/store';
@@ -35,7 +36,15 @@ const Navbar = ({ selectedCategory, onSelectCategory, darkMode, onToggleDarkMode
   const cart = useStore((state) => state.cart);
   const setIsCartOpen = useStore((state) => state.setIsCartOpen);
   const logoutUser = useStore((state) => state.logoutUser);
+  const unreadNotificationsCount = useStore((state) => state.unreadNotificationsCount);
+  const fetchUnreadNotificationsCount = useStore((state) => state.fetchUnreadNotificationsCount);
   const cartCount = (cart || []).reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnreadNotificationsCount();
+    }
+  }, [user]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchScope, setSearchScope] = useState('Products');
   const [searchQuery, setSearchQuery] = useState('');
@@ -249,6 +258,34 @@ const Navbar = ({ selectedCategory, onSelectCategory, darkMode, onToggleDarkMode
               </motion.button>
             )}
 
+            {/* Notification Bell for Logged-In Users */}
+            {user && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  if (location.pathname === '/user/dashboard') {
+                    navigate('/user/dashboard?tab=notifications');
+                  } else if (user.role === 'seller') {
+                    navigate('/seller/dashboard');
+                  } else if (['admin', 'super_admin'].includes(user.role)) {
+                    navigate('/admin/notifications');
+                  } else {
+                    navigate('/user/dashboard?tab=notifications');
+                  }
+                }}
+                className="relative p-2 sm:p-2.5 text-theme-muted hover:text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 rounded-xl transition cursor-pointer"
+                title="Notifications & Updates"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#F59E0B] text-slate-950 font-bold text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-theme-card">
+                    {unreadNotificationsCount}
+                  </span>
+                )}
+              </motion.button>
+            )}
+
             {/* User Account / Auth Dropdown */}
             {user ? (
               <div className="relative" ref={userDropdownRef}>
@@ -431,6 +468,34 @@ const Navbar = ({ selectedCategory, onSelectCategory, darkMode, onToggleDarkMode
                           <span>Profile</span>
                         </div>
                         <span className="text-[10px] text-theme-muted font-normal">Manage</span>
+                      </button>
+
+                      {/* Notifications */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          if (user.role === 'seller') {
+                            navigate('/seller/dashboard');
+                          } else if (['admin', 'super_admin'].includes(user.role)) {
+                            navigate('/admin/notifications');
+                          } else {
+                            navigate('/user/dashboard?tab=notifications');
+                          }
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B] transition cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Bell className="w-4 h-4 text-[#F59E0B]" />
+                          <span>Notifications</span>
+                        </div>
+                        {unreadNotificationsCount > 0 ? (
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-[#F59E0B] text-slate-950">
+                            {unreadNotificationsCount} new
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-theme-muted font-normal">Inbox</span>
+                        )}
                       </button>
 
                       <div className="my-1 border-t border-theme-border/70" />

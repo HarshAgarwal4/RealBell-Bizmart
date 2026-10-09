@@ -21,6 +21,9 @@ import { SellerApprovals } from '../admin/SellerApprovals.jsx';
 import { AdminProducts } from '../admin/AdminProducts.jsx';
 import { AdminOrders } from '../admin/AdminOrders.jsx';
 import { AdminUsers } from '../admin/AdminUsers.jsx';
+import { AdminTeamAccess } from '../admin/AdminTeamAccess.jsx';
+import { AdminNotifications } from '../admin/AdminNotifications.jsx';
+import { AdminMailCenter } from '../admin/AdminMailCenter.jsx';
 
 const Routes = createBrowserRouter([
   {
@@ -146,6 +149,30 @@ const Routes = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
         <AdminUsers />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/admin/team-access',
+    element: (
+      <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+        <AdminTeamAccess />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/admin/notifications',
+    element: (
+      <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+        <AdminNotifications />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/admin/mail',
+    element: (
+      <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+        <AdminMailCenter />
       </ProtectedRoute>
     )
   },

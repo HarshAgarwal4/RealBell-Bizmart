@@ -36,11 +36,16 @@ export const SellerProducts = () => {
     title: '',
     description: '',
     category: 'apparel',
-    price: '',
+    saleType: 'both', // 'normal' | 'wholesale' | 'both'
+    price: '', // Base / Normal retail price
     mrp: '',
-    moq: 10,
+    moq: 50,
+    wholesaleTiers: [
+      { minQty: 100, unitPrice: 20 },
+      { minQty: 200, unitPrice: 19 }
+    ],
     unit: 'pcs',
-    stock: 100,
+    stock: 1000,
     leadTime: '3-5 Business Days',
     badge: 'Verified Wholesale',
     image: ''
@@ -75,22 +80,64 @@ export const SellerProducts = () => {
   };
 
   const handleOpenEditModal = (prod) => {
+    const existingTiers = (prod.wholesaleTiers && prod.wholesaleTiers.length > 0)
+      ? prod.wholesaleTiers
+      : [
+          { minQty: prod.moq || 100, unitPrice: Math.round(Number(prod.price) * 0.9) || 20 },
+          { minQty: (prod.moq || 100) * 2, unitPrice: Math.round(Number(prod.price) * 0.8) || 19 }
+        ];
+
     setFormData({
       title: prod.title,
-      description: prod.description,
-      category: prod.category,
-      price: prod.price,
+      description: prod.description || '',
+      category: prod.category || 'apparel',
+      saleType: prod.saleType || 'both',
+      price: prod.price || '',
       mrp: prod.mrp || '',
-      moq: prod.moq || 1,
+      moq: prod.moq || (existingTiers[0]?.minQty || 1),
+      wholesaleTiers: existingTiers,
       unit: prod.unit || 'pcs',
       stock: prod.stock || 0,
       leadTime: prod.leadTime || '3-5 Business Days',
       badge: prod.badge || '',
-      image: prod.images?.[0] || ''
+      image: prod.images?.[0] || prod.image || ''
     });
     setIsEditing(true);
     setCurrentProductId(prod._id);
     setIsModalOpen(true);
+  };
+
+  const handleAddTier = () => {
+    const current = formData.wholesaleTiers || [];
+    const last = current[current.length - 1];
+    const nextQty = last ? Number(last.minQty) + 100 : 100;
+    const nextPrice = last ? Math.max(1, Number(last.unitPrice) - 1) : 20;
+    setFormData({
+      ...formData,
+      wholesaleTiers: [...current, { minQty: nextQty, unitPrice: nextPrice }]
+    });
+  };
+
+  const handleUpdateTier = (index, field, value) => {
+    const updated = [...(formData.wholesaleTiers || [])];
+    updated[index] = { ...updated[index], [field]: Number(value) };
+    setFormData({ ...formData, wholesaleTiers: updated });
+  };
+
+  const handleRemoveTier = (index) => {
+    const updated = (formData.wholesaleTiers || []).filter((_, i) => i !== index);
+    setFormData({ ...formData, wholesaleTiers: updated });
+  };
+
+  const handleLoadExampleTiers = () => {
+    setFormData({
+      ...formData,
+      wholesaleTiers: [
+        { minQty: 100, unitPrice: 20 },
+        { minQty: 200, unitPrice: 19 },
+        { minQty: 500, unitPrice: 17 }
+      ]
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -101,12 +148,19 @@ export const SellerProducts = () => {
     }
 
     setSubmitting(true);
+    const validTiers = (formData.wholesaleTiers || [])
+      .filter(t => t && Number(t.minQty) > 0 && Number(t.unitPrice) > 0)
+      .map(t => ({ minQty: Number(t.minQty), unitPrice: Number(t.unitPrice) }))
+      .sort((a, b) => a.minQty - b.minQty);
+
     const payload = {
       ...formData,
+      saleType: formData.saleType,
       price: Number(formData.price),
-      mrp: formData.mrp ? Number(formData.mrp) : Number(formData.price),
-      moq: Number(formData.moq),
+      mrp: formData.mrp ? Number(formData.mrp) : Number(formData.price) * 1.5,
+      moq: formData.saleType === 'normal' ? 1 : Number(formData.moq || (validTiers[0]?.minQty || 1)),
       stock: Number(formData.stock),
+      wholesaleTiers: formData.saleType === 'normal' ? [] : validTiers,
       images: formData.image ? [formData.image] : ["https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80"]
     };
 
@@ -121,7 +175,7 @@ export const SellerProducts = () => {
       } else {
         const res = await axios.post('/seller/products', payload);
         if (res.status === 200 && res.data.status === 1) {
-          toast.success("Wholesale product listed successfully!");
+          toast.success("Product listed successfully!");
           setIsModalOpen(false);
           fetchSellerProducts();
         }
@@ -160,7 +214,7 @@ export const SellerProducts = () => {
       {/* Top action header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xs">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Wholesale Catalog & Listings</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Product Inventory & Listings</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Add, update inventory, and manage your wholesale price tiers
           </p>
@@ -258,21 +312,43 @@ export const SellerProducts = () => {
                     {p.description}
                   </p>
 
-                  <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 text-xs">
+                    <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 text-xs">
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Wholesale Price</span>
+                      <span className="text-[10px] text-slate-400 block">
+                        {p.saleType === 'wholesale' ? 'Wholesale Price' : 'Price / Piece'}
+                      </span>
                       <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
                         ₹{p.price} <span className="text-[10px] text-slate-500 font-normal">/{p.unit || 'pc'}</span>
                       </span>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[10px] text-slate-400 block">Min. Order (MOQ)</span>
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">
-                        {p.moq || 1} {p.unit || 'pcs'}
+                      <span className="text-[10px] text-slate-400 block">Selling Format</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md inline-block ${
+                        p.saleType === 'wholesale'
+                          ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30'
+                          : p.saleType === 'normal'
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                            : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                      }`}>
+                        {p.saleType === 'wholesale' ? 'Wholesale Only' : p.saleType === 'normal' ? 'Retail Only' : 'Both (Retail + Wholesale)'}
                       </span>
                     </div>
                   </div>
+
+                  {/* Wholesale Tiers Preview Chip */}
+                  {p.saleType !== 'normal' && p.wholesaleTiers && p.wholesaleTiers.length > 0 && (
+                    <div className="bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-[10px] text-slate-700 dark:text-slate-300 space-y-1">
+                      <span className="font-bold block text-slate-900 dark:text-slate-100">Wholesale Constraints:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {p.wholesaleTiers.map((t, tidx) => (
+                          <span key={tidx} className="bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-medium">
+                            {t.minQty}+ pcs @ <strong className="text-amber-600 dark:text-amber-400">₹{t.unitPrice}</strong>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -324,17 +400,49 @@ export const SellerProducts = () => {
             >
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
-                  {isEditing ? "Edit Wholesale Product" : "List New Wholesale Product"}
+                  {isEditing ? "Edit Product Listing" : "List New Product"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+                {/* 1. SELLING FORMAT SELECTOR */}
+                <div className="space-y-1.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                  <label className="block font-bold text-slate-900 dark:text-white text-xs">
+                    Selling Mode / Purchasing Section *
+                  </label>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Choose whether you sell this item individually (normal retail), in bulk wholesale lots, or both.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                    {[
+                      { id: 'normal', label: '🛍️ Normal Retail Only', desc: 'Single unit orders (MOQ 1)' },
+                      { id: 'wholesale', label: '📦 Wholesale Only', desc: 'Bulk volume with tier constraints' },
+                      { id: 'both', label: '🌟 Both (Normal + Wholesale)', desc: 'Retail + volume discounts' }
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, saleType: opt.id })}
+                        className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
+                          formData.saleType === opt.id
+                            ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30 text-amber-900 dark:text-amber-200'
+                            : 'bg-white dark:bg-slate-850 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-400'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{opt.label}</div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{opt.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
                     Product Title *
@@ -387,7 +495,7 @@ export const SellerProducts = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                      Wholesale Price (₹) *
+                      {formData.saleType === 'wholesale' ? 'Base Wholesale Price (₹) *' : 'Normal / Retail Price (₹) *'}
                     </label>
                     <input
                       type="number"
@@ -416,16 +524,16 @@ export const SellerProducts = () => {
 
                   <div>
                     <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
-                      Min Order (MOQ) *
+                      Min Wholesale (MOQ)
                     </label>
                     <input
                       type="number"
-                      required
                       min="1"
                       value={formData.moq}
                       onChange={(e) => setFormData({ ...formData, moq: e.target.value })}
-                      placeholder="50"
-                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                      placeholder={formData.saleType === 'normal' ? '1' : '50'}
+                      disabled={formData.saleType === 'normal'}
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-amber-500 disabled:opacity-40"
                     />
                   </div>
 
@@ -442,6 +550,96 @@ export const SellerProducts = () => {
                     />
                   </div>
                 </div>
+
+                {/* 2. WHOLESALE TIER CONSTRAINTS BUILDER */}
+                {formData.saleType !== 'normal' && (
+                  <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 space-y-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="font-bold text-xs text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                          <span>📦 Wholesale Volume Constraints & Pricing Tiers</span>
+                        </span>
+                        <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+                          e.g. For 100 pcs - ₹20, 200 pcs - ₹19. Buyers must meet the tier quantity to get that rate.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleLoadExampleTiers}
+                          className="px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 rounded-lg cursor-pointer transition"
+                        >
+                          Load Example Tiers
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAddTier}
+                          className="px-2.5 py-1 text-[11px] font-bold text-slate-950 bg-[#F59E0B] hover:bg-[#D97706] rounded-lg cursor-pointer transition flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Add Tier</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {(formData.wholesaleTiers || []).map((tier, idx) => (
+                        <div 
+                          key={idx}
+                          className="flex items-center gap-2 bg-white dark:bg-slate-850 p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-900/50 shadow-2xs"
+                        >
+                          <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 w-14 shrink-0">
+                            Tier {idx + 1}:
+                          </span>
+
+                          <div className="flex-1 flex items-center gap-1.5">
+                            <label className="text-[10px] text-slate-500 dark:text-slate-400 shrink-0">Min Qty:</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={tier.minQty}
+                              onChange={(e) => handleUpdateTier(idx, 'minQty', e.target.value)}
+                              placeholder="100"
+                              className="w-20 px-2 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center"
+                            />
+                            <span className="text-[11px] text-slate-400">{formData.unit || 'pcs'}</span>
+                          </div>
+
+                          <div className="flex-1 flex items-center gap-1.5">
+                            <label className="text-[10px] text-slate-500 dark:text-slate-400 shrink-0">Rate / unit:</label>
+                            <div className="relative flex items-center">
+                              <span className="absolute left-2 text-xs text-slate-400">₹</span>
+                              <input
+                                type="number"
+                                min="1"
+                                value={tier.unitPrice}
+                                onChange={(e) => handleUpdateTier(idx, 'unitPrice', e.target.value)}
+                                placeholder="20"
+                                className="w-20 pl-5 pr-2 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center text-amber-700 dark:text-amber-300"
+                              />
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTier(idx)}
+                            className="p-1 text-slate-400 hover:text-rose-500 transition cursor-pointer"
+                            title="Delete Tier"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {(!formData.wholesaleTiers || formData.wholesaleTiers.length === 0) && (
+                        <p className="text-[11px] text-slate-400 italic text-center py-2">
+                          No wholesale tiers added yet. Click "+ Add Tier" or "Load Example Tiers" above.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>

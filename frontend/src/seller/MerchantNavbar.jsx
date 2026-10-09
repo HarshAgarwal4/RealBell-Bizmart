@@ -41,6 +41,12 @@ export const MerchantNavbar = ({
   const navigate = useNavigate();
   const user = useStore(state => state.user);
   const logoutUser = useStore(state => state.logoutUser);
+  const unreadNotificationsCount = useStore(state => state.unreadNotificationsCount);
+  const fetchUnreadNotificationsCount = useStore(state => state.fetchUnreadNotificationsCount);
+
+  useEffect(() => {
+    fetchUnreadNotificationsCount();
+  }, []);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -227,6 +233,26 @@ export const MerchantNavbar = ({
             {pendingShipments > 0 && (
               <span className="absolute -top-1 -right-1 bg-[#F59E0B] text-slate-950 font-bold text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-theme-card">
                 {pendingShipments}
+              </span>
+            )}
+          </motion.button>
+
+          {/* Notification Center Bell */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onTabChange && onTabChange('notifications')}
+            className={`relative p-2 rounded-xl transition cursor-pointer ${
+              activeTab === 'notifications'
+                ? 'bg-[#F59E0B] text-slate-950 font-bold'
+                : 'text-theme-muted hover:text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5'
+            }`}
+            title="Merchant Notifications & Advisories"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#F59E0B] text-slate-950 font-bold text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-theme-card">
+                {unreadNotificationsCount}
               </span>
             )}
           </motion.button>
@@ -450,6 +476,14 @@ export const MerchantNavbar = ({
                 }`}
               >
                 Orders ({pendingShipments})
+              </button>
+              <button
+                onClick={() => { setMobileMenuOpen(false); onTabChange && onTabChange('notifications'); }}
+                className={`p-2.5 rounded-xl text-xs font-bold border transition ${
+                  activeTab === 'notifications' ? 'bg-[#F59E0B] text-slate-950 border-[#F59E0B]' : 'border-theme-border text-theme-main'
+                }`}
+              >
+                Alerts ({unreadNotificationsCount})
               </button>
               <button
                 onClick={() => { setMobileMenuOpen(false); onTabChange && onTabChange('settings'); }}

@@ -77,11 +77,27 @@ export const CartModal = () => {
       return;
     }
 
+    const cleanPhone = String(shippingAddress.phone).replace(/\D/g, "");
+    if (cleanPhone.length < 10) {
+      toast.error("Please enter a valid 10-digit mobile phone number");
+      return;
+    }
+
+    const cleanPincode = String(shippingAddress.pincode).replace(/\D/g, "");
+    if (cleanPincode.length !== 6) {
+      toast.error("Please enter a valid 6-digit postal PIN code");
+      return;
+    }
+
     setIsProcessing(true);
 
     const orderData = {
       items: cart,
-      shippingAddress,
+      shippingAddress: {
+        ...shippingAddress,
+        phone: cleanPhone,
+        pincode: cleanPincode
+      },
       totalAmount
     };
 
@@ -162,63 +178,84 @@ export const CartModal = () => {
               ) : step === 'cart' ? (
                 /* Step 1: Cart Items List */
                 <div className="space-y-3">
-                  {cart.map((item) => (
-                    <div 
-                      key={item._id}
-                      className="flex gap-3 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50 hover:border-amber-400/40 transition"
-                    >
-                      <img 
-                        src={item.image || "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=300&q=80"} 
-                        alt={item.title}
-                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl bg-white dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700"
-                      />
-                      <div className="flex-1 min-w-0 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-start justify-between gap-1">
-                            <h5 className="font-semibold text-xs sm:text-sm truncate" title={item.title}>
-                              {item.title}
-                            </h5>
-                            <button 
-                              onClick={() => removeFromCart(item._id)}
-                              className="text-slate-400 hover:text-rose-500 transition p-0.5"
-                              title="Remove"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                          <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-                            ₹{item.price} / {item.unit || 'pc'}
-                          </p>
-                        </div>
+                  {cart.map((item) => {
+                    const itemIdKey = item.cartItemId || item._id;
+                    const isWholesale = item.purchaseType === 'wholesale';
+                    const minQty = isWholesale ? (item.moq || 1) : 1;
 
-                        <div className="flex items-center justify-between pt-2">
-                          {/* Qty Controls */}
-                          <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-800">
-                            <button 
-                              onClick={() => updateCartQty(item._id, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
-                              className="px-2 py-1 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 transition"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="px-2.5 text-xs font-semibold font-mono">
-                              {item.quantity}
-                            </span>
-                            <button 
-                              onClick={() => updateCartQty(item._id, item.quantity + 1)}
-                              className="px-2 py-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
+                    return (
+                      <div 
+                        key={itemIdKey}
+                        className="flex gap-3 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50 hover:border-amber-400/40 transition"
+                      >
+                        <img 
+                          src={item.image || "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=300&q=80"} 
+                          alt={item.title}
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl bg-white dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700"
+                        />
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-start justify-between gap-1">
+                              <h5 className="font-semibold text-xs sm:text-sm truncate" title={item.title}>
+                                {item.title}
+                              </h5>
+                              <button 
+                                onClick={() => removeFromCart(itemIdKey)}
+                                className="text-slate-400 hover:text-rose-500 transition p-0.5 cursor-pointer"
+                                title="Remove"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
+                                isWholesale 
+                                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30' 
+                                  : 'bg-theme-card text-theme-muted border border-theme-border'
+                              }`}>
+                                {isWholesale ? 'Wholesale Batch' : 'Normal Retail'}
+                              </span>
+                              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-bold">
+                                ₹{item.price} / {item.unit || 'pc'}
+                              </p>
+                            </div>
+                            {isWholesale && (
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                Min wholesale batch constraint: {minQty} {item.unit || 'pcs'}
+                              </p>
+                            )}
                           </div>
 
-                          <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                            ₹{(Number(item.price) * Number(item.quantity)).toLocaleString('en-IN')}
+                          <div className="flex items-center justify-between pt-2">
+                            {/* Qty Controls */}
+                            <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-800">
+                              <button 
+                                onClick={() => updateCartQty(itemIdKey, item.quantity - 1)}
+                                disabled={item.quantity <= minQty}
+                                className="px-2 py-1 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 transition cursor-pointer"
+                                title={item.quantity <= minQty ? `Min constraint is ${minQty}` : 'Decrease'}
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="px-2.5 text-xs font-semibold font-mono">
+                                {item.quantity}
+                              </span>
+                              <button 
+                                onClick={() => updateCartQty(itemIdKey, item.quantity + 1)}
+                                className="px-2 py-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+
+                            <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                              ₹{(Number(item.price) * Number(item.quantity)).toLocaleString('en-IN')}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 /* Step 2: Shipping Form */

@@ -7,6 +7,8 @@ import { isLoggedIn } from './middlewares/Auth.js';
 import { userRoutes } from './App/routes/user.js';
 import { productRoutes } from './App/routes/product.js';
 import { orderPaymentRoutes } from './App/routes/orderPayment.js';
+import { teamRoutes } from './App/routes/team.js';
+import { notificationRoutes } from './App/routes/notification.js';
 
 const app = express();
 
@@ -26,9 +28,13 @@ app.get('/', (req, res) => {
 app.use('/', userRoutes);
 app.use('/api', productRoutes);
 app.use('/api', orderPaymentRoutes);
+app.use('/api', teamRoutes);
+app.use('/api', notificationRoutes);
 // Also mount at root for backward compatibility
 app.use('/', productRoutes);
 app.use('/', orderPaymentRoutes);
+app.use('/', teamRoutes);
+app.use('/', notificationRoutes);
 
 const PORT = process.env.PORT || 4000;
 const DB_URL = process.env.DB_URL || "mongodb://localhost:27017/RBF";

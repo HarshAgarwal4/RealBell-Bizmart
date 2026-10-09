@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from '../services/axios';
 import { useStore } from '../zustand/store';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { CartModal } from './CartModal';
 import { ProductDetailModal } from './ProductDetailModal';
+import { NotificationFeed } from '../components/NotificationFeed';
 import { toast } from 'react-toastify';
 import { ProductCardSkeleton, OrderCardSkeleton } from '../components/Skeletons';
 import { withSkeletonDelay } from '../utils/skeletonDelay';
@@ -41,7 +42,8 @@ import {
   PhoneCall,
   Menu,
   Heart,
-  Eye
+  Eye,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -53,6 +55,7 @@ const staticProducts = [
     title: 'Men’s Ultra-Soft Bio-Washed Cotton Crew Neck T-Shirt',
     category: 'apparel',
     categoryLabel: 'Apparel & Garments',
+    saleType: 'both',
     image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
@@ -60,9 +63,9 @@ const staticProducts = [
       'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=800&q=80'
     ],
-    price: 399,
+    price: 349,
     mrp: 899,
-    discount: '56% off',
+    discount: '61% off',
     rating: 4.8,
     reviews: 1420,
     delivery: 'FREE Delivery Tomorrow',
@@ -71,6 +74,12 @@ const staticProducts = [
     shopName: 'Tirupur Knitwear Hub',
     unit: 'pcs',
     stock: 2500,
+    moq: 100,
+    wholesaleTiers: [
+      { minQty: 100, unitPrice: 20 },
+      { minQty: 200, unitPrice: 19 },
+      { minQty: 500, unitPrice: 17 }
+    ],
     leadTime: '1-2 Days',
     description: '100% Super combed bio-washed cotton, 180 GSM pre-shrunk fabric. Highly breathable, soft-flow dyed, and engineered for maximum durability and everyday comfort.'
   },
@@ -80,6 +89,7 @@ const staticProducts = [
     title: 'Premium Corporate Piqué Knit Polo T-Shirt (Embroidered)',
     category: 'uniforms',
     categoryLabel: 'Corporate Wear',
+    saleType: 'both',
     image: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
@@ -98,6 +108,12 @@ const staticProducts = [
     shopName: 'Apex Workwear Mills',
     unit: 'pcs',
     stock: 1800,
+    moq: 50,
+    wholesaleTiers: [
+      { minQty: 50, unitPrice: 280 },
+      { minQty: 100, unitPrice: 260 },
+      { minQty: 200, unitPrice: 240 }
+    ],
     leadTime: '2-3 Days',
     description: 'Heavyweight 220 GSM breathable piqué knit polo. Features reinforced collar bands, contrast horn buttons, and anti-shrink fabric finish.'
   },
@@ -107,6 +123,7 @@ const staticProducts = [
     title: 'Heavyweight Unisex Pullover Fleece Hoodie (Winter Edition)',
     category: 'apparel',
     categoryLabel: 'Winterwear',
+    saleType: 'both',
     image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
@@ -125,6 +142,12 @@ const staticProducts = [
     shopName: 'Ludhiana Woolens Ltd',
     unit: 'pcs',
     stock: 950,
+    moq: 30,
+    wholesaleTiers: [
+      { minQty: 30, unitPrice: 590 },
+      { minQty: 60, unitPrice: 520 },
+      { minQty: 120, unitPrice: 470 }
+    ],
     leadTime: '1-2 Days',
     description: '320 GSM brushed fleece cotton hoodie with double-needle stitch construction, kangaroo pouch pockets, and adjustable metal-tipped drawstrings.'
   },
@@ -134,6 +157,7 @@ const staticProducts = [
     title: 'Anti-Theft Waterproof Laptop Backpack with USB Port',
     category: 'bags',
     categoryLabel: 'Bags & Luggage',
+    saleType: 'both',
     image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80',
@@ -152,6 +176,12 @@ const staticProducts = [
     shopName: 'Urban Gear Makers',
     unit: 'pcs',
     stock: 1400,
+    moq: 20,
+    wholesaleTiers: [
+      { minQty: 20, unitPrice: 650 },
+      { minQty: 50, unitPrice: 580 },
+      { minQty: 100, unitPrice: 520 }
+    ],
     leadTime: '1-2 Days',
     description: 'Constructed with tear-proof 900D Oxford nylon and hidden security zippers. Accommodates up to 15.6 inch laptops, ergonomic air-cushion back pads.'
   },
@@ -161,6 +191,7 @@ const staticProducts = [
     title: 'Double-Wall Vacuum Insulated Stainless Steel Thermal Flask 1L',
     category: 'drinkware',
     categoryLabel: 'Drinkware',
+    saleType: 'both',
     image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80',
@@ -179,6 +210,12 @@ const staticProducts = [
     shopName: 'Moradabad Metal Craft',
     unit: 'pcs',
     stock: 3200,
+    moq: 40,
+    wholesaleTiers: [
+      { minQty: 40, unitPrice: 260 },
+      { minQty: 100, unitPrice: 230 },
+      { minQty: 250, unitPrice: 195 }
+    ],
     leadTime: '1-2 Days',
     description: 'Crafted from food-grade SUS 304 stainless steel. Keeps hot beverages steaming for 18 hours and iced cold beverages chilled for 24 hours.'
   },
@@ -188,6 +225,7 @@ const staticProducts = [
     title: 'Eco-Friendly Heavy Duty Canvas Tote Bag with Zipper',
     category: 'bags',
     categoryLabel: 'Bags & Totes',
+    saleType: 'both',
     image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80',
@@ -206,6 +244,12 @@ const staticProducts = [
     shopName: 'GreenLeaf Organics',
     unit: 'pcs',
     stock: 4500,
+    moq: 50,
+    wholesaleTiers: [
+      { minQty: 50, unitPrice: 140 },
+      { minQty: 100, unitPrice: 120 },
+      { minQty: 200, unitPrice: 105 }
+    ],
     leadTime: '1-2 Days',
     description: '100% natural biodegradable 14oz unbleached cotton canvas. Features wide webbed handles and heavy-duty interior organization pockets.'
   },
@@ -215,6 +259,7 @@ const staticProducts = [
     title: 'All-Weather Industrial Steel-Toe Safety Work Boots',
     category: 'footwear',
     categoryLabel: 'Footwear & Safety',
+    saleType: 'both',
     image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
@@ -233,6 +278,12 @@ const staticProducts = [
     shopName: 'Agra Footwear Syndicate',
     unit: 'pairs',
     stock: 800,
+    moq: 20,
+    wholesaleTiers: [
+      { minQty: 20, unitPrice: 750 },
+      { minQty: 50, unitPrice: 680 },
+      { minQty: 100, unitPrice: 610 }
+    ],
     leadTime: '2-3 Days',
     description: 'CE and ISI certified buff leather safety boot equipped with 200J impact steel toe cap, penetration-resistant steel midsole, and oil-proof sole.'
   },
@@ -242,6 +293,7 @@ const staticProducts = [
     title: 'Executive Matte Black Metal Rollerball Pen & Case Gift Set',
     category: 'stationery',
     categoryLabel: 'Stationery & Gifts',
+    saleType: 'wholesale', // Wholesale-only merchant listing
     image: 'https://images.unsplash.com/photo-1585336261026-6b2f15f013d9?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1585336261026-6b2f15f013d9?auto=format&fit=crop&w=800&q=80',
@@ -255,11 +307,17 @@ const staticProducts = [
     rating: 4.9,
     reviews: 1120,
     delivery: 'FREE Delivery in 2 Days',
-    badge: 'Premium Gift',
+    badge: 'Wholesale Only',
     sellerName: 'Noida Luxury Gifts',
     shopName: 'Noida Luxury Gifts',
     unit: 'sets',
     stock: 2200,
+    moq: 50,
+    wholesaleTiers: [
+      { minQty: 50, unitPrice: 140 },
+      { minQty: 100, unitPrice: 125 },
+      { minQty: 300, unitPrice: 110 }
+    ],
     leadTime: '1-2 Days',
     description: 'Solid brass body finished with tactile matte powder coating. Comes with high-flow German ceramic roller refill and hard-shell gift presentation case.'
   },
@@ -269,6 +327,7 @@ const staticProducts = [
     title: 'Premium Hardcover PU Leather Journal & Planner 2026',
     category: 'stationery',
     categoryLabel: 'Office Stationery',
+    saleType: 'normal', // Normal-only retail listing
     image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
     images: [
       'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
@@ -282,11 +341,12 @@ const staticProducts = [
     rating: 4.8,
     reviews: 840,
     delivery: 'FREE Delivery Tomorrow',
-    badge: 'Top Rated',
+    badge: 'Retail Exclusive',
     sellerName: 'Heritage Paper Co.',
     shopName: 'Heritage Paper Co.',
     unit: 'pcs',
     stock: 3100,
+    moq: 1,
     leadTime: '1-2 Days',
     description: '192 numbered pages of 100 GSM acid-free ink-proof paper. Includes magnetic clasp lock, inner expandable document pocket, and ribbon markers.'
   },
@@ -375,11 +435,14 @@ const staticProducts = [
 
 export const UserDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useStore(state => state.user);
   const logoutUser = useStore(state => state.logoutUser);
   const cart = useStore(state => state.cart);
   const addToCart = useStore(state => state.addToCart);
   const setIsCartOpen = useStore(state => state.setIsCartOpen);
+  const unreadNotificationsCount = useStore(state => state.unreadNotificationsCount);
+  const fetchUnreadNotificationsCount = useStore(state => state.fetchUnreadNotificationsCount);
 
   // Dark Mode State
   const [darkMode, setDarkMode] = useState(() => {
@@ -387,6 +450,18 @@ export const UserDashboard = () => {
     if (saved) return saved === 'dark';
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+
+  useEffect(() => {
+    fetchUnreadNotificationsCount();
+  }, []);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['catalog', 'orders', 'notifications'].includes(tabParam)) {
+      setCurrentTab(tabParam);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (darkMode) {
@@ -410,6 +485,9 @@ export const UserDashboard = () => {
   // Products State
   const [products, setProducts] = useState(staticProducts);
   const [productsLoading, setProductsLoading] = useState(true);
+
+  // Market Mode State: 'normal' (Retail) vs 'wholesale' (Bulk B2B)
+  const [marketMode, setMarketMode] = useState('normal');
 
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -476,6 +554,9 @@ export const UserDashboard = () => {
             title: p.title,
             category: p.category || 'apparel',
             categoryLabel: p.categoryLabel || 'Marketplace Item',
+            saleType: p.saleType || 'both',
+            wholesaleTiers: p.wholesaleTiers || [],
+            moq: p.moq || (p.wholesaleTiers?.[0]?.minQty || 1),
             image: (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
             images: (p.images && p.images.length > 0) ? p.images : [
               (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80'
@@ -486,7 +567,7 @@ export const UserDashboard = () => {
             rating: p.rating || 4.8,
             reviews: p.reviews || 320,
             delivery: 'FREE Delivery in 2-3 Days',
-            badge: p.badge || 'Verified Seller',
+            badge: p.badge || (p.saleType === 'wholesale' ? 'Wholesale Only' : 'Verified Seller'),
             sellerName: p.sellerName || p.shopName || 'Verified Merchant',
             shopName: p.shopName || 'Direct Marketplace Shop',
             unit: p.unit || 'pcs',
@@ -516,28 +597,12 @@ export const UserDashboard = () => {
     setIsDetailOpen(true);
   };
 
-  const handleAddToCart = (product, qty = 1) => {
-    addToCart({
-      _id: String(product._id || product.id),
-      title: product.title,
-      price: product.price,
-      quantity: qty,
-      image: (product.images && product.images[0]) || product.image,
-      unit: product.unit || 'pcs',
-      sellerName: product.sellerName || product.shopName || 'Verified Seller'
-    }, qty);
+  const handleAddToCart = (product, qty = null, purchaseType = marketMode) => {
+    addToCart(product, qty, purchaseType);
   };
 
-  const handleBuyNow = (product, qty = 1) => {
-    addToCart({
-      _id: String(product._id || product.id),
-      title: product.title,
-      price: product.price,
-      quantity: qty,
-      image: (product.images && product.images[0]) || product.image,
-      unit: product.unit || 'pcs',
-      sellerName: product.sellerName || product.shopName || 'Verified Seller'
-    }, qty);
+  const handleBuyNow = (product, qty = null, purchaseType = marketMode) => {
+    addToCart(product, qty, purchaseType);
     setIsCartOpen(true);
   };
 
@@ -560,6 +625,13 @@ export const UserDashboard = () => {
   // Filtering Logic
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
+      // 1. Market Mode filter:
+      if (marketMode === 'normal') {
+        if (p.saleType === 'wholesale') return false; // Wholesale-only products hidden from normal market
+      } else if (marketMode === 'wholesale') {
+        if (p.saleType === 'normal') return false; // Normal-only products hidden from wholesale market
+      }
+
       if (selectedCategory !== 'all' && p.category !== selectedCategory) return false;
 
       if (searchTerm.trim()) {
@@ -592,7 +664,7 @@ export const UserDashboard = () => {
       }
       return 0;
     });
-  }, [products, selectedCategory, searchTerm, priceRange, ratingFilter, inStockOnly, sortBy]);
+  }, [products, marketMode, selectedCategory, searchTerm, priceRange, ratingFilter, inStockOnly, sortBy]);
 
   const activeFiltersCount = (selectedCategory !== 'all' ? 1 : 0) + 
                              (priceRange !== 'all' ? 1 : 0) + 
@@ -639,6 +711,81 @@ export const UserDashboard = () => {
             {currentTab === 'catalog' && (
               <div className="space-y-4">
                 
+                {/* MARKET MODE SWITCHER BANNER: Normal Retail vs Wholesale B2B */}
+                <div className="bg-theme-card border border-theme-border rounded-3xl p-4 sm:p-5 shadow-xs transition-all duration-300">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          Active Marketplace
+                        </span>
+                        <span className="text-xs text-theme-muted">• Switch market mode anytime</span>
+                      </div>
+                      <h2 className="text-lg sm:text-2xl font-black text-theme-main flex items-center gap-2">
+                        {marketMode === 'normal' ? (
+                          <>
+                            <span>🛍️ Normal Retail Market</span>
+                            <span className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/25">
+                              Single Items • 1 pc MOQ
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>📦 Wholesale B2B Market</span>
+                            <span className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/25">
+                              Bulk Supply • Volume Tiers
+                            </span>
+                          </>
+                        )}
+                      </h2>
+                      <p className="text-xs text-theme-muted max-w-xl">
+                        {marketMode === 'normal' 
+                          ? 'Purchase individual items with no minimum order constraints. Enjoy standard retail pricing, doorstep delivery, and flexible payment options.'
+                          : 'Source in bulk quantities with tiered volume constraints (e.g. for 100 pcs - ₹20, 200 pcs - ₹19). Commercial tax invoicing & freight logistics.'}
+                      </p>
+                    </div>
+
+                    {/* Interactive Switcher Pill Tabs */}
+                    <div className="p-1.5 rounded-2xl bg-theme-page border border-theme-border flex items-center gap-1.5 shrink-0 w-full md:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => setMarketMode('normal')}
+                        className={`flex-1 md:flex-initial px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer ${
+                          marketMode === 'normal'
+                            ? 'bg-[#F59E0B] text-slate-950 shadow-md ring-2 ring-[#F59E0B]/30'
+                            : 'text-theme-muted hover:text-theme-main hover:bg-black/5 dark:hover:bg-white/5'
+                        }`}
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        <span className="whitespace-nowrap">Normal Market</span>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                          marketMode === 'normal' ? 'bg-slate-950/15 text-slate-950' : 'bg-theme-card text-theme-muted'
+                        }`}>
+                          {products.filter(p => p.saleType !== 'wholesale').length}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setMarketMode('wholesale')}
+                        className={`flex-1 md:flex-initial px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer ${
+                          marketMode === 'wholesale'
+                            ? 'bg-[#F59E0B] text-slate-950 shadow-md ring-2 ring-[#F59E0B]/30'
+                            : 'text-theme-muted hover:text-theme-main hover:bg-black/5 dark:hover:bg-white/5'
+                        }`}
+                      >
+                        <Package className="w-4 h-4" />
+                        <span className="whitespace-nowrap">Wholesale Market</span>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                          marketMode === 'wholesale' ? 'bg-slate-950/15 text-slate-950' : 'bg-theme-card text-theme-muted'
+                        }`}>
+                          {products.filter(p => p.saleType !== 'normal').length}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Search & Sorting Toolbar */}
                 <div className="bg-theme-card border border-theme-border rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3">
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -838,6 +985,13 @@ export const UserDashboard = () => {
                         ? Math.round(((prod.mrp - prod.price) / prod.mrp) * 100) 
                         : (prod.discount ? parseInt(prod.discount) : 0);
 
+                      const isWholesaleMarket = marketMode === 'wholesale';
+                      const prodTiers = (prod.wholesaleTiers && prod.wholesaleTiers.length > 0)
+                        ? prod.wholesaleTiers
+                        : [{ minQty: prod.moq || 50, unitPrice: prod.price }];
+                      const lowestTierPrice = Math.min(...prodTiers.map(t => t.unitPrice));
+                      const minWholesaleQty = prodTiers[0]?.minQty || prod.moq || 10;
+
                       if (viewMode === 'list') {
                         // Compact List View
                         return (
@@ -859,8 +1013,8 @@ export const UserDashboard = () => {
                               </div>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[10px] font-bold text-[#D97706] dark:text-[#F59E0B] uppercase tracking-wider">
-                                    {prod.categoryLabel || prod.category}
+                                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25">
+                                    {isWholesaleMarket ? `Wholesale (Min ${minWholesaleQty} ${prod.unit || 'pcs'})` : 'Retail (MOQ 1)'}
                                   </span>
                                   {prod.badge && (
                                     <span className="text-[10px] font-semibold bg-theme-page text-theme-muted px-2 py-0.5 rounded border border-theme-border">
@@ -877,19 +1031,24 @@ export const UserDashboard = () => {
                                     <span>{prod.rating || 4.8}</span>
                                   </div>
                                   <span>•</span>
-                                  <span>{prod.sellerName || 'Verified Wholesaler'}</span>
+                                  <span>{prod.sellerName || 'Verified Merchant'}</span>
                                   <span>•</span>
-                                  <span className="text-emerald-500 font-semibold">{prod.delivery}</span>
+                                  <span className="text-[#D97706] dark:text-[#F59E0B] font-semibold">{prod.delivery}</span>
                                 </div>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-theme-border">
                               <div className="text-left sm:text-right">
-                                <div className="text-sm sm:text-base font-bold text-theme-main">
-                                  ₹{Number(prod.price).toLocaleString('en-IN')}
+                                <div className="text-sm sm:text-base font-extrabold text-theme-main">
+                                  {isWholesaleMarket ? `From ₹${lowestTierPrice}` : `₹${Number(prod.price).toLocaleString('en-IN')}`}
+                                  <span className="text-[11px] font-normal text-theme-muted ml-0.5">/{prod.unit || 'pc'}</span>
                                 </div>
-                                {prod.mrp && (
+                                {isWholesaleMarket ? (
+                                  <span className="text-[11px] text-[#D97706] dark:text-[#F59E0B] font-semibold block">
+                                    Min lot: {minWholesaleQty} {prod.unit || 'pcs'}
+                                  </span>
+                                ) : prod.mrp && (
                                   <span className="text-xs text-theme-muted line-through">
                                     ₹{Number(prod.mrp).toLocaleString('en-IN')}
                                   </span>
@@ -906,11 +1065,11 @@ export const UserDashboard = () => {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => handleAddToCart(prod)}
-                                  className="px-4 py-2 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                  onClick={() => handleAddToCart(prod, isWholesaleMarket ? minWholesaleQty : 1)}
+                                  className="px-4 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs bg-[#F59E0B] hover:bg-[#D97706] text-slate-950"
                                 >
-                                  <ShoppingBag className="w-3.5 h-3.5" />
-                                  <span>Add</span>
+                                  {isWholesaleMarket ? <Package className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
+                                  <span>{isWholesaleMarket ? 'Wholesale Order' : 'Add'}</span>
                                 </button>
                               </div>
                             </div>
@@ -918,11 +1077,11 @@ export const UserDashboard = () => {
                         );
                       }
 
-                      // Modern Clean Grid Card with Multi-Image Support
+                      // Modern Clean Grid Card with Multi-Image Support & Wholesale Constraints
                       return (
                         <div
                           key={prodId}
-                          className="bg-theme-card border border-theme-border rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-[#F59E0B]/50 transition-all duration-200 flex flex-col group"
+                          className="bg-theme-card border border-theme-border hover:border-[#F59E0B]/50 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-200 flex flex-col group"
                         >
                           {/* Image Container with Multiple Images Switcher */}
                           <div className="relative aspect-4/3 overflow-hidden bg-theme-page">
@@ -935,7 +1094,11 @@ export const UserDashboard = () => {
                             
                             {/* Top Badges */}
                             <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 pointer-events-none">
-                              {discountVal > 0 && (
+                              <span className="font-bold text-[10px] px-2 py-0.5 rounded shadow-xs uppercase tracking-wider bg-slate-950/85 text-[#F59E0B] border border-[#F59E0B]/30 backdrop-blur-xs">
+                                {isWholesaleMarket ? `📦 Wholesale (Min ${minWholesaleQty})` : '🛍️ Retail (MOQ 1)'}
+                              </span>
+
+                              {discountVal > 0 && !isWholesaleMarket && (
                                 <span className="bg-[#E11D48] text-white font-bold text-[10px] px-2 py-0.5 rounded shadow-xs">
                                   {discountVal}% OFF
                                 </span>
@@ -1001,23 +1164,41 @@ export const UserDashboard = () => {
                                 <Store className="w-3 h-3 text-theme-muted shrink-0" />
                                 <span className="truncate">{prod.sellerName || 'Verified Merchant'}</span>
                               </div>
+
+                              {/* Wholesale Tiers Preview in Wholesale Market Mode */}
+                              {isWholesaleMarket && prodTiers.length > 0 && (
+                                <div className="bg-theme-page border border-theme-border rounded-xl p-2.5 text-[10px] text-theme-main space-y-1.5">
+                                  <div className="flex items-center justify-between font-bold">
+                                    <span className="text-theme-muted">Volume Constraints:</span>
+                                    <span className="text-[#D97706] dark:text-[#F59E0B] font-extrabold">Min {minWholesaleQty} {prod.unit || 'pcs'}</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {prodTiers.slice(0, 3).map((t, idx) => (
+                                      <span key={idx} className="bg-theme-card px-2 py-0.5 rounded-md border border-theme-border font-semibold text-theme-main">
+                                        {t.minQty}+: <strong className="text-[#D97706] dark:text-[#F59E0B]">₹{t.unitPrice}</strong>
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
 
                             {/* Price & Actions */}
                             <div className="pt-2 border-t border-theme-border space-y-2">
                               <div className="flex items-baseline justify-between">
                                 <div>
-                                  <span className="text-base font-bold text-theme-main">
-                                    ₹{Number(prod.price).toLocaleString('en-IN')}
-                                  </span>
-                                  {prod.mrp && (
-                                    <span className="text-xs text-theme-muted line-through ml-1.5">
+                                  <div className="text-base font-extrabold text-theme-main">
+                                    {isWholesaleMarket ? `From ₹${lowestTierPrice}` : `₹${Number(prod.price).toLocaleString('en-IN')}`}
+                                    <span className="text-[11px] font-normal text-theme-muted ml-0.5">/{prod.unit || 'pc'}</span>
+                                  </div>
+                                  {!isWholesaleMarket && prod.mrp && prod.mrp > prod.price && (
+                                    <span className="text-xs text-theme-muted line-through">
                                       ₹{Number(prod.mrp).toLocaleString('en-IN')}
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-[10px] font-medium text-emerald-500">
-                                  Free Express
+                                <span className="text-[10px] font-medium text-theme-muted">
+                                  {isWholesaleMarket ? `Batch Dispatch` : 'Express Delivery'}
                                 </span>
                               </div>
 
@@ -1032,11 +1213,11 @@ export const UserDashboard = () => {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => handleAddToCart(prod)}
-                                  className="py-1.5 px-2 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-97"
+                                  onClick={() => handleAddToCart(prod, isWholesaleMarket ? minWholesaleQty : 1)}
+                                  className="py-1.5 px-2 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-97 bg-[#F59E0B] hover:bg-[#D97706] text-slate-950"
                                 >
-                                  <ShoppingBag className="w-3.5 h-3.5 text-slate-950" />
-                                  <span>Add</span>
+                                  {isWholesaleMarket ? <Package className="w-3.5 h-3.5 text-slate-950" /> : <ShoppingBag className="w-3.5 h-3.5 text-slate-950" />}
+                                  <span>{isWholesaleMarket ? 'Order Lot' : 'Add'}</span>
                                 </button>
                               </div>
                             </div>
@@ -1069,18 +1250,18 @@ export const UserDashboard = () => {
                   <div className="bg-theme-card border border-theme-border rounded-2xl p-4 shadow-xs">
                     <div className="flex items-center justify-between text-theme-muted mb-1">
                       <span className="text-[11px] font-semibold">In Transit</span>
-                      <Truck className="w-4 h-4 text-blue-400" />
+                      <Truck className="w-4 h-4 text-[#F59E0B]" />
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-blue-500 dark:text-blue-400">{activeOrdersCount}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-theme-main">{activeOrdersCount}</div>
                     <div className="text-[10px] text-theme-muted">Active shipments</div>
                   </div>
 
                   <div className="bg-theme-card border border-theme-border rounded-2xl p-4 shadow-xs">
                     <div className="flex items-center justify-between text-theme-muted mb-1">
                       <span className="text-[11px] font-semibold">Delivered</span>
-                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      <CheckCircle className="w-4 h-4 text-[#F59E0B]" />
                     </div>
-                    <div className="text-xl sm:text-2xl font-bold text-emerald-500">{completedOrdersCount}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-theme-main">{completedOrdersCount}</div>
                     <div className="text-[10px] text-theme-muted">Fulfilled packages</div>
                   </div>
 
@@ -1143,35 +1324,54 @@ export const UserDashboard = () => {
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-xs sm:text-sm text-theme-main">#{order.orderNumber}</span>
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md capitalize ${
-                                order.orderStatus === 'delivered' ? 'bg-emerald-500/15 text-emerald-400 dark:text-emerald-300' :
+                                order.orderStatus === 'cancelled' ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/25' :
+                                order.paymentStatus === 'failed' ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25' :
+                                order.orderStatus === 'delivered' ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/25' :
                                 order.orderStatus === 'processing' ? 'bg-[#F59E0B]/15 text-[#D97706] dark:text-[#F59E0B]' :
-                                'bg-blue-500/15 text-blue-500 dark:text-blue-400'
+                                'bg-theme-page text-theme-muted border border-theme-border'
                               }`}>
-                                {order.orderStatus.replace(/_/g, ' ')}
+                                {order.paymentStatus === 'failed' ? 'Payment Failed' : order.orderStatus.replace(/_/g, ' ')}
                               </span>
                               <span className="text-[11px] text-theme-muted">
                                 {new Date(order.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
                               </span>
                             </div>
                             <p className="text-xs text-theme-muted">
-                              {order.items?.length || 0} item(s) • Total: <strong className="text-theme-main">₹{Number(order.totalAmount).toLocaleString('en-IN')}</strong> • Paid via {order.paymentMethod?.toUpperCase()}
+                              {order.items?.length || 0} item(s) • Total: <strong className="text-theme-main">₹{Number(order.totalAmount).toLocaleString('en-IN')}</strong> • {order.paymentStatus === 'paid' ? 'Paid via Razorpay' : order.paymentStatus === 'failed' ? 'Payment Failed' : 'Pending Authorization'}
                             </p>
                           </div>
 
-                          <button
-                            onClick={() => navigate(`/user/track-order/${order._id}`)}
-                            className="bg-theme-page hover:bg-[#F59E0B]/10 border border-theme-border text-xs font-semibold px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer text-theme-main"
-                          >
-                            <Truck className="w-3.5 h-3.5 text-blue-400" />
-                            <span>Track Order</span>
-                            <ChevronRight className="w-3 h-3 text-theme-muted" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            {order.paymentStatus === 'failed' && (
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/user/track-order/${order._id}`)}
+                                className="bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer shadow-xs"
+                              >
+                                Retry Payment
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/user/track-order/${order._id}`)}
+                              className="bg-theme-page hover:bg-[#F59E0B]/10 border border-theme-border text-xs font-semibold px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer text-theme-main"
+                            >
+                              <Truck className="w-3.5 h-3.5 text-[#F59E0B]" />
+                              <span>Track Order</span>
+                              <ChevronRight className="w-3 h-3 text-theme-muted" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
               </div>
+            )}
+
+            {/* VIEW 3: NOTIFICATIONS & PLATFORM FEED */}
+            {currentTab === 'notifications' && (
+              <NotificationFeed role="buyer" />
             )}
 
           </main>
@@ -1299,7 +1499,33 @@ export const UserDashboard = () => {
             )}
           </button>
 
-          {/* 3. My Profile Tab */}
+          {/* 3. Notifications Tab */}
+          <button
+            type="button"
+            onClick={() => {
+              setCurrentTab('notifications');
+              setMobileSidebarOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              currentTab === 'notifications'
+                ? 'bg-[#F59E0B] text-slate-950 font-bold shadow-xs'
+                : 'text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Bell className="w-4 h-4" />
+              <span>Notifications</span>
+            </div>
+            {unreadNotificationsCount > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
+                currentTab === 'notifications' ? 'bg-slate-950 text-white' : 'bg-amber-500/15 text-[#F59E0B] border border-amber-500/20'
+              }`}>
+                {unreadNotificationsCount} new
+              </span>
+            )}
+          </button>
+
+          {/* 4. My Profile Tab */}
           <Link
             to="/user/profile"
             className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-theme-main hover:bg-[#F59E0B]/8 dark:hover:bg-[#EAD9C4]/5 transition cursor-pointer"
@@ -1351,6 +1577,39 @@ export const UserDashboard = () => {
         {/* Sidebar Filter Controls */}
         {currentTab === 'catalog' && (
           <div className="pt-4 border-t border-theme-border space-y-4">
+            {/* Purchasing Market Mode Selector */}
+            <div className="space-y-1.5 pb-3 border-b border-theme-border">
+              <span className="text-[10px] font-bold text-theme-muted uppercase tracking-wider block">
+                Purchasing Market
+              </span>
+              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-theme-page border border-theme-border">
+                <button
+                  type="button"
+                  onClick={() => setMarketMode('normal')}
+                  className={`py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    marketMode === 'normal'
+                      ? 'bg-[#F59E0B] text-slate-950 shadow-xs'
+                      : 'text-theme-muted hover:text-theme-main'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>Normal</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMarketMode('wholesale')}
+                  className={`py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                    marketMode === 'wholesale'
+                      ? 'bg-[#F59E0B] text-slate-950 shadow-xs'
+                      : 'text-theme-muted hover:text-theme-main'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Wholesale</span>
+                </button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-theme-muted uppercase tracking-wider">
                 Filters

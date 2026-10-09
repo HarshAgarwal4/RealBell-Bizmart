@@ -64,6 +64,17 @@ const productSchema = new mongoose.Schema({
         type: [String],
         default: ["https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=700&q=80"]
     },
+    saleType: {
+        type: String,
+        enum: ['normal', 'wholesale', 'both'],
+        default: 'both'
+    },
+    wholesaleTiers: [
+        {
+            minQty: { type: Number, required: true },
+            unitPrice: { type: Number, required: true }
+        }
+    ],
     isActive: {
         type: Boolean,
         default: true

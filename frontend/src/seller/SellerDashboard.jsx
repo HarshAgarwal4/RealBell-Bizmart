@@ -8,6 +8,7 @@ import { SellerProducts } from './SellerProducts';
 import { SellerOrders } from './SellerOrders';
 import { MerchantNavbar } from './MerchantNavbar';
 import { MerchantFooter } from './MerchantFooter';
+import { NotificationFeed } from '../components/NotificationFeed';
 import { KPICardSkeleton, TableRowSkeleton } from '../components/Skeletons';
 import { withSkeletonDelay } from '../utils/skeletonDelay';
 import { 
@@ -37,7 +38,8 @@ import {
   MapPin,
   FileText,
   AlertCircle,
-  LayoutDashboard
+  LayoutDashboard,
+  Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -45,8 +47,14 @@ export const SellerDashboard = () => {
   const navigate = useNavigate();
   const user = useStore(state => state.user);
   const logoutUser = useStore(state => state.logoutUser);
+  const unreadNotificationsCount = useStore(state => state.unreadNotificationsCount);
+  const fetchUnreadNotificationsCount = useStore(state => state.fetchUnreadNotificationsCount);
 
-  // Active Tab: 'overview' | 'products' | 'orders' | 'settings'
+  useEffect(() => {
+    fetchUnreadNotificationsCount();
+  }, []);
+
+  // Active Tab: 'overview' | 'products' | 'orders' | 'settings' | 'notifications'
   const [activeTab, setActiveTab] = useState('overview');
   const [forceForm, setForceForm] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -285,7 +293,7 @@ export const SellerDashboard = () => {
               >
                 <div className="flex items-center gap-2.5">
                   <Package className="w-4 h-4" />
-                  <span>Wholesale Inventory</span>
+                  <span>Product Inventory</span>
                 </div>
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
                   activeTab === 'products' ? 'bg-slate-950 text-white' : 'bg-theme-card text-theme-muted border border-theme-border'
@@ -343,6 +351,32 @@ export const SellerDashboard = () => {
                   <Building2 className="w-4 h-4" />
                   <span>Store Profile & GST</span>
                 </div>
+              </button>
+
+              {/* 5. Notifications */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('notifications');
+                  setMobileSidebarOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                  activeTab === 'notifications'
+                    ? 'bg-[#F59E0B] text-slate-950 font-bold shadow-xs'
+                    : 'text-theme-main hover:bg-[#F59E0B]/10 hover:text-[#F59E0B]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Bell className="w-4 h-4" />
+                  <span>Notifications</span>
+                </div>
+                {unreadNotificationsCount > 0 ? (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold ${
+                    activeTab === 'notifications' ? 'bg-slate-950 text-white' : 'bg-amber-500/15 text-[#F59E0B] border border-amber-500/20'
+                  }`}>
+                    {unreadNotificationsCount} new
+                  </span>
+                ) : null}
               </button>
             </div>
 
@@ -529,7 +563,7 @@ export const SellerDashboard = () => {
                       <ChevronRight className="w-4 h-4 text-theme-muted group-hover:text-[#F59E0B] group-hover:translate-x-1 transition" />
                     </div>
                     <h3 className="font-bold text-sm text-theme-main mb-1">
-                      Manage Wholesale Inventory
+                      Manage Product Inventory
                     </h3>
                     <p className="text-xs text-theme-muted">
                       Add new listings, update MOQs, and adjust bulk pricing tiers.
@@ -766,6 +800,13 @@ export const SellerDashboard = () => {
                   </p>
                 </div>
               </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* TAB 5: NOTIFICATIONS FEED                                      */}
+            {/* ============================================================== */}
+            {activeTab === 'notifications' && (
+              <NotificationFeed role="merchant" />
             )}
 
           </main>

@@ -11,6 +11,20 @@ const getInitialCart = () => {
     }
 };
 
+export const calculateWholesaleTierPrice = (product, quantity) => {
+    if (!product?.wholesaleTiers || product.wholesaleTiers.length === 0) {
+        return Number(product?.price) || 0;
+    }
+    const sortedTiers = [...product.wholesaleTiers].sort((a, b) => a.minQty - b.minQty);
+    let matchedPrice = sortedTiers[0].unitPrice;
+    for (const tier of sortedTiers) {
+        if (quantity >= tier.minQty) {
+            matchedPrice = tier.unitPrice;
+        }
+    }
+    return matchedPrice;
+};
+
 export const useStore = create((set, get) => ({
     user: null,
     isLoading: true,
@@ -22,22 +36,46 @@ export const useStore = create((set, get) => ({
     isCartOpen: false,
     setIsCartOpen: (open) => set({ isCartOpen: open }),
 
-    addToCart: (product, qty = null) => {
+    addToCart: (product, qty = null, purchaseType = 'normal') => {
         const currentCart = get().cart;
-        const quantityToAdd = qty || product.moq || 1;
-        const existingIdx = currentCart.findIndex(item => item._id === product._id);
+        const isWholesale = purchaseType === 'wholesale';
+        const defaultMinQty = isWholesale ? (product.moq || (product.wholesaleTiers?.[0]?.minQty || 10)) : 1;
+        const quantityToAdd = qty ? Math.max(qty, isWholesale ? defaultMinQty : 1) : defaultMinQty;
+        
+        const unitPrice = isWholesale 
+            ? calculateWholesaleTierPrice(product, quantityToAdd)
+            : (Number(product.price) || 0);
+
+        const cartItemId = `${product._id}_${purchaseType}`;
+        const existingIdx = currentCart.findIndex(item => 
+            (item.cartItemId && item.cartItemId === cartItemId) || 
+            (!item.cartItemId && item._id === product._id && (item.purchaseType || 'normal') === purchaseType)
+        );
 
         let newCart;
         if (existingIdx > -1) {
-            newCart = currentCart.map((item, idx) => 
-                idx === existingIdx ? { ...item, quantity: item.quantity + quantityToAdd } : item
-            );
+            newCart = currentCart.map((item, idx) => {
+                if (idx !== existingIdx) return item;
+                const newQuantity = item.quantity + quantityToAdd;
+                const updatedPrice = item.purchaseType === 'wholesale' 
+                    ? calculateWholesaleTierPrice(item, newQuantity)
+                    : item.price;
+                return {
+                    ...item,
+                    quantity: newQuantity,
+                    price: updatedPrice
+                };
+            });
         } else {
             newCart = [...currentCart, {
+                cartItemId,
                 _id: product._id,
                 title: product.title,
-                price: product.price,
-                moq: product.moq || 1,
+                price: unitPrice,
+                normalPrice: product.price,
+                purchaseType: purchaseType,
+                moq: defaultMinQty,
+                wholesaleTiers: product.wholesaleTiers || [],
                 unit: product.unit || 'pcs',
                 quantity: quantityToAdd,
                 image: product.images && product.images[0] ? product.images[0] : (product.image || ''),
@@ -48,21 +86,39 @@ export const useStore = create((set, get) => ({
 
         localStorage.setItem('realbell_cart', JSON.stringify(newCart));
         set({ cart: newCart, isCartOpen: true });
-        toast.success(`Added ${product.title.slice(0, 25)}... to cart!`);
+        toast.success(`Added to cart (${purchaseType === 'wholesale' ? 'Wholesale Batch' : 'Normal Item'})!`);
     },
 
-    removeFromCart: (productId) => {
-        const newCart = get().cart.filter(item => item._id !== productId);
+    removeFromCart: (cartItemIdOrProdId) => {
+        const newCart = get().cart.filter(item => 
+            item.cartItemId !== cartItemIdOrProdId && item._id !== cartItemIdOrProdId
+        );
         localStorage.setItem('realbell_cart', JSON.stringify(newCart));
         set({ cart: newCart });
         toast.info("Item removed from cart");
     },
 
-    updateCartQty: (productId, newQty) => {
-        if (newQty < 1) return;
-        const newCart = get().cart.map(item => 
-            item._id === productId ? { ...item, quantity: newQty } : item
+    updateCartQty: (cartItemIdOrProdId, newQty) => {
+        const itemToUpdate = get().cart.find(item => 
+            item.cartItemId === cartItemIdOrProdId || item._id === cartItemIdOrProdId
         );
+        if (!itemToUpdate) return;
+        
+        const minQty = itemToUpdate.purchaseType === 'wholesale' ? (itemToUpdate.moq || 1) : 1;
+        if (newQty < minQty) {
+            toast.warning(`Minimum constraint for wholesale purchase is ${minQty} ${itemToUpdate.unit || 'pcs'}`);
+            return;
+        }
+
+        const newCart = get().cart.map(item => {
+            if (item.cartItemId === cartItemIdOrProdId || item._id === cartItemIdOrProdId) {
+                const updatedPrice = item.purchaseType === 'wholesale'
+                    ? calculateWholesaleTierPrice(item, newQty)
+                    : item.price;
+                return { ...item, quantity: newQty, price: updatedPrice };
+            }
+            return item;
+        });
         localStorage.setItem('realbell_cart', JSON.stringify(newCart));
         set({ cart: newCart });
     },
@@ -110,14 +166,28 @@ export const useStore = create((set, get) => ({
         }
     },
 
+    // Notifications State
+    unreadNotificationsCount: 0,
+    setUnreadNotificationsCount: (count) => set({ unreadNotificationsCount: Math.max(0, count) }),
+    fetchUnreadNotificationsCount: async () => {
+        try {
+            const res = await axios.get('/notifications/my?limit=1');
+            if (res.data && res.data.status === 1) {
+                set({ unreadNotificationsCount: res.data.unreadCount || 0 });
+            }
+        } catch (err) {
+            // Silently ignore if not logged in
+        }
+    },
+
     logoutUser: async () => {
         try {
             await axios.post('/logout');
-            set({ user: null });
+            set({ user: null, unreadNotificationsCount: 0 });
             toast.success("Logged out successfully");
         } catch (err) {
             console.log(err);
-            set({ user: null });
+            set({ user: null, unreadNotificationsCount: 0 });
         }
     }
 }));

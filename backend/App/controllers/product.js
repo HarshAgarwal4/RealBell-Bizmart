@@ -6,9 +6,16 @@ const defaultProducts = [
         title: "Wholesale Cotton Crew Neck T-Shirts (Lot of 100)",
         category: "apparel",
         categoryLabel: "Apparel & Garments",
-        price: 185,
-        mrp: 399,
-        moq: 100,
+        saleType: "both",
+        price: 349, // Normal individual price
+        mrp: 699,
+        moq: 50,
+        wholesaleTiers: [
+            { minQty: 50, unitPrice: 210 },
+            { minQty: 100, unitPrice: 185 },
+            { minQty: 200, unitPrice: 170 },
+            { minQty: 500, unitPrice: 155 }
+        ],
         unit: "pcs",
         stock: 5000,
         leadTime: "3-5 Days",
@@ -20,9 +27,15 @@ const defaultProducts = [
         title: "Premium Pique Polo Shirts (Bulk Lots)",
         category: "apparel",
         categoryLabel: "Apparel & Garments",
-        price: 260,
-        mrp: 599,
+        saleType: "both",
+        price: 499,
+        mrp: 899,
         moq: 50,
+        wholesaleTiers: [
+            { minQty: 50, unitPrice: 280 },
+            { minQty: 100, unitPrice: 260 },
+            { minQty: 200, unitPrice: 240 }
+        ],
         unit: "pcs",
         stock: 3500,
         leadTime: "5-7 Days",
@@ -34,9 +47,15 @@ const defaultProducts = [
         title: "Heavy-Duty Canvas Laptop Backpacks",
         category: "bags",
         categoryLabel: "Bags & Luggage",
-        price: 490,
-        mrp: 1299,
-        moq: 30,
+        saleType: "both",
+        price: 999,
+        mrp: 1999,
+        moq: 20,
+        wholesaleTiers: [
+            { minQty: 20, unitPrice: 550 },
+            { minQty: 50, unitPrice: 490 },
+            { minQty: 100, unitPrice: 450 }
+        ],
         unit: "pcs",
         stock: 1200,
         leadTime: "4-6 Days",
@@ -48,9 +67,15 @@ const defaultProducts = [
         title: "Double-Wall Insulated Stainless Steel Flask (750ml)",
         category: "drinkware",
         categoryLabel: "Drinkware",
-        price: 320,
-        mrp: 799,
-        moq: 50,
+        saleType: "both",
+        price: 599,
+        mrp: 999,
+        moq: 30,
+        wholesaleTiers: [
+            { minQty: 30, unitPrice: 350 },
+            { minQty: 100, unitPrice: 320 },
+            { minQty: 200, unitPrice: 290 }
+        ],
         unit: "pcs",
         stock: 2000,
         leadTime: "3-5 Days",
@@ -62,9 +87,15 @@ const defaultProducts = [
         title: "Executive PU Leather Notebook & Metal Pen Set",
         category: "stationery",
         categoryLabel: "Corporate Gifts",
-        price: 210,
-        mrp: 499,
-        moq: 50,
+        saleType: "both",
+        price: 399,
+        mrp: 699,
+        moq: 25,
+        wholesaleTiers: [
+            { minQty: 25, unitPrice: 240 },
+            { minQty: 50, unitPrice: 210 },
+            { minQty: 100, unitPrice: 190 }
+        ],
         unit: "sets",
         stock: 4000,
         leadTime: "3-4 Days",
@@ -76,9 +107,15 @@ const defaultProducts = [
         title: "Steel Toe Industrial Safety Boots (CE Approved)",
         category: "footwear",
         categoryLabel: "Footwear & Safety",
-        price: 650,
-        mrp: 1499,
+        saleType: "both",
+        price: 1199,
+        mrp: 2499,
         moq: 20,
+        wholesaleTiers: [
+            { minQty: 20, unitPrice: 720 },
+            { minQty: 50, unitPrice: 650 },
+            { minQty: 100, unitPrice: 590 }
+        ],
         unit: "pairs",
         stock: 1500,
         leadTime: "4-7 Days",
@@ -91,11 +128,18 @@ const defaultProducts = [
 // Public: Get all active products
 async function getPublicProducts(req, res) {
     try {
-        const { category, search } = req.query;
+        const { category, search, market } = req.query;
         let query = { isActive: true };
 
         if (category && category !== 'all') {
             query.category = category;
+        }
+
+        // Filter by Market Mode ('normal' vs 'wholesale')
+        if (market === 'normal') {
+            query.saleType = { $in: ['normal', 'both', null] };
+        } else if (market === 'wholesale') {
+            query.saleType = { $in: ['wholesale', 'both'] };
         }
 
         if (search) {
@@ -109,7 +153,7 @@ async function getPublicProducts(req, res) {
         let products = await ProductModel.find(query).sort({ isFeatured: -1, createdAt: -1 });
 
         // Auto-seed demo products if completely empty
-        if (products.length === 0 && !search && (!category || category === 'all')) {
+        if (products.length === 0 && !search && (!category || category === 'all') && (!market || market === 'all')) {
             const adminUser = req.user || null;
             const seedItems = defaultProducts.map(p => ({
                 ...p,
@@ -180,12 +224,24 @@ async function createProduct(req, res) {
             stock,
             leadTime,
             badge,
-            images
+            images,
+            saleType,
+            wholesaleTiers
         } = req.body;
 
         if (!title || !price || !category) {
             return res.send({ status: 7, msg: "Title, Price, and Category are required" });
         }
+
+        let parsedTiers = [];
+        if (Array.isArray(wholesaleTiers)) {
+            parsedTiers = wholesaleTiers
+                .filter(t => t && Number(t.minQty) > 0 && Number(t.unitPrice) > 0)
+                .map(t => ({ minQty: Number(t.minQty), unitPrice: Number(t.unitPrice) }))
+                .sort((a, b) => a.minQty - b.minQty);
+        }
+
+        const resolvedMoq = moq ? Number(moq) : (parsedTiers.length > 0 ? parsedTiers[0].minQty : 1);
 
         const newProduct = new ProductModel({
             seller: req.user._id,
@@ -197,12 +253,14 @@ async function createProduct(req, res) {
             categoryLabel: categoryLabel || category,
             price: Number(price),
             mrp: mrp ? Number(mrp) : Number(price) * 1.5,
-            moq: moq ? Number(moq) : 10,
+            moq: resolvedMoq,
             unit: unit || "pcs",
             stock: stock ? Number(stock) : 100,
             leadTime: leadTime || "3-5 Days",
             badge: badge || "Wholesale",
             images: images && images.length > 0 ? images : ["https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=700&q=80"],
+            saleType: saleType || "both",
+            wholesaleTiers: parsedTiers,
             isActive: true
         });
 
@@ -231,11 +289,19 @@ async function updateProduct(req, res) {
 
         const fields = [
             'title', 'description', 'category', 'categoryLabel', 'price',
-            'mrp', 'moq', 'unit', 'stock', 'leadTime', 'badge', 'images', 'isActive'
+            'mrp', 'moq', 'unit', 'stock', 'leadTime', 'badge', 'images', 'isActive',
+            'saleType'
         ];
         fields.forEach(f => {
             if (req.body[f] !== undefined) product[f] = req.body[f];
         });
+
+        if (req.body.wholesaleTiers !== undefined && Array.isArray(req.body.wholesaleTiers)) {
+            product.wholesaleTiers = req.body.wholesaleTiers
+                .filter(t => t && Number(t.minQty) > 0 && Number(t.unitPrice) > 0)
+                .map(t => ({ minQty: Number(t.minQty), unitPrice: Number(t.unitPrice) }))
+                .sort((a, b) => a.minQty - b.minQty);
+        }
 
         await product.save();
         return res.send({ status: 1, msg: "Product updated successfully", product });
